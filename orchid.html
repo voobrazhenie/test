@@ -440,19 +440,26 @@
   .history .hinv {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 3px;
   }
   .history .hinv button {
-    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 21px;
+    background: rgba(255,177,74,0.10);
     border: none;
-    padding: 0 3px;
-    color: #6b5c3f;
-    font-size: 9px;
-    line-height: 1.3;
+    border-radius: 6px;
+    padding: 0;
+    color: #a08a5c;
+    font-size: 11px;
+    line-height: 1;
     cursor: pointer;
+    touch-action: manipulation;
   }
-  .history .hinv button:hover { color: var(--display-amber); }
-  .history .hinv button:active { transform: translateY(1px); }
+  .history .hinv button:hover { color: var(--display-amber); background: rgba(255,177,74,0.18); }
+  .history .hinv button:active { transform: translateY(1px); background: rgba(255,177,74,0.25); }
   .history .hname {
     font-size: 17px;
     color: var(--display-amber);
@@ -536,7 +543,7 @@
     .ctl label { font-size: 8px; }
     .stepper { gap: 4px; }
     .stepper .value { min-width: 38px; font-size: 11px; }
-    .section-label { margin: 9px 2px 5px; }
+    .section-label { margin: 8px 2px 4px; }
     .btn-row { gap: 6px; }
     .obtn { padding: 8px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
     /* Chord types as a tidy 4x2 grid; sound & mode in one row of six */
@@ -549,14 +556,15 @@
     .key.white .keyname { font-size: 9px; bottom: 5px; }
     .key.black .keyname { display: none; }
     .strum-wrap { margin-top: 10px; }
-    .strum { height: 42px; padding: 5px; }
+    .strum { height: 38px; padding: 5px; }
     .strum .seg { font-size: 8px; padding-bottom: 3px; }
-    .history { gap: 6px; padding: 7px 10px; }
+    .history { gap: 6px; padding: 6px 10px; }
     .history .hname, .history .hcell.empty { font-size: 13px; }
     .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
-    .history .hcell { gap: 3px; }
-    .history .hinv button { font-size: 8px; padding: 0 2px; }
-    .history-ctl { margin: 6px 2px 4px; }
+    .history .hcell { gap: 4px; }
+    .history .hinv { gap: 3px; }
+    .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
+    .history-ctl { margin: 4px 2px 2px; }
     .footer { margin-top: 14px; }
   }
 </style>
@@ -1019,8 +1027,8 @@
   const chordHistory = [];
 
   function pushHistory(chord) {
-    const last = chordHistory[chordHistory.length - 1];
-    if (last && last.name === chord.name && last.notes.join() === chord.notes.join()) return;
+    // Every strike is recorded, repeats included, so a chord can
+    // deliberately occupy several slots of the sequence.
     chordHistory.push({ name: chord.name, notes: chord.notes.slice() });
     if (chordHistory.length > 4) chordHistory.shift();
     renderHistory();
