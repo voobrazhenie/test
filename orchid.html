@@ -392,7 +392,7 @@
 
     <div class="display">
       <div class="chord-name" id="dispChord">—</div>
-      <div class="chord-notes" id="dispNotes">press a key to play a chord</div>
+      <div class="chord-notes" id="dispNotes">hold a chord type &middot; tap a key</div>
     </div>
 
     <div class="controls">
@@ -423,22 +423,16 @@
     </div>
   </div>
 
-  <div class="section-label">Chord Quality</div>
-  <div class="btn-row" id="qualityRow">
-    <button class="obtn active" data-quality="maj">MAJ<span class="kbd-hint">1</span></button>
-    <button class="obtn" data-quality="min">MIN<span class="kbd-hint">2</span></button>
-    <button class="obtn" data-quality="dim">DIM<span class="kbd-hint">3</span></button>
-    <button class="obtn" data-quality="sus4">SUS4<span class="kbd-hint">4</span></button>
-    <button class="obtn" data-quality="sus2">SUS2<span class="kbd-hint">5</span></button>
-  </div>
-
-  <div class="section-label">Extension</div>
-  <div class="btn-row" id="extRow">
-    <button class="obtn gray active" data-ext="none">OFF<span class="kbd-hint">0</span></button>
-    <button class="obtn gray" data-ext="6">6<span class="kbd-hint">6</span></button>
-    <button class="obtn gray" data-ext="7">7<span class="kbd-hint">7</span></button>
-    <button class="obtn gray" data-ext="maj7">MAJ7<span class="kbd-hint">8</span></button>
-    <button class="obtn gray" data-ext="9">9<span class="kbd-hint">9</span></button>
+  <div class="section-label">Chord Type — hold one, then tap a key (no type = single note)</div>
+  <div class="btn-row" id="typeRow">
+    <button class="obtn" data-type="maj">MAJ<span class="kbd-hint">1</span></button>
+    <button class="obtn" data-type="min">MIN<span class="kbd-hint">2</span></button>
+    <button class="obtn" data-type="dim">DIM<span class="kbd-hint">3</span></button>
+    <button class="obtn" data-type="sus4">SUS4<span class="kbd-hint">4</span></button>
+    <button class="obtn" data-type="maj7">MAJ7<span class="kbd-hint">5</span></button>
+    <button class="obtn" data-type="min7">MIN7<span class="kbd-hint">6</span></button>
+    <button class="obtn" data-type="dom7">7<span class="kbd-hint">7</span></button>
+    <button class="obtn" data-type="six">6<span class="kbd-hint">8</span></button>
   </div>
 
   <div class="section-label">Sound &amp; Mode</div>
@@ -464,9 +458,10 @@
 </div>
 
 <div class="footer">
-  Play with your mouse/touch, or use the computer keyboard: white keys
-  <b>Z&nbsp;X&nbsp;C&nbsp;V&nbsp;B&nbsp;N&nbsp;M</b>, black keys <b>S&nbsp;D&nbsp;G&nbsp;H&nbsp;J</b>,
-  chord quality <b>1–5</b>, extensions <b>6–9</b> (<b>0</b>&nbsp;=&nbsp;off).<br>
+  Hold a chord-type key, then tap a note key — with nothing held, keys play single notes.
+  Computer keyboard: hold <b>1–8</b> for chord types; white keys
+  <b>Z&nbsp;X&nbsp;C&nbsp;V&nbsp;B&nbsp;N&nbsp;M</b>, black keys <b>S&nbsp;D&nbsp;G&nbsp;H&nbsp;J</b>.
+  With a mouse, click a chord type to latch it.<br>
   This is an unofficial fan-made web tribute to the
   <a href="https://telepathicinstruments.com" target="_blank" rel="noopener">Orchid by Telepathic Instruments</a>
   and is not affiliated with or endorsed by them.
@@ -478,26 +473,20 @@
 
   /* ============================= State ============================= */
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const QUALITIES = {
+  // The 8 chord-type keys, as on the hardware: held while tapping a note key.
+  const CHORD_TYPES = {
     maj:  { name: "",     intervals: [0, 4, 7] },
     min:  { name: "m",    intervals: [0, 3, 7] },
     dim:  { name: "dim",  intervals: [0, 3, 6] },
     sus4: { name: "sus4", intervals: [0, 5, 7] },
-    sus2: { name: "sus2", intervals: [0, 2, 7] },
-  };
-  // Extension: extra intervals + display suffix. maj7/7 replace nothing, they add.
-  const EXTENSIONS = {
-    none: { name: "",     add: [] },
-    "6":  { name: "6",    add: [9] },
-    "7":  { name: "7",    add: [10] },
-    maj7: { name: "maj7", add: [11] },
-    "9":  { name: "add9", add: [14] },
+    maj7: { name: "maj7", intervals: [0, 4, 7, 11] },
+    min7: { name: "m7",   intervals: [0, 3, 7, 10] },
+    dom7: { name: "7",    intervals: [0, 4, 7, 10] },
+    six:  { name: "6",    intervals: [0, 4, 7, 9] },
   };
   const VOICING_NAMES = ["CLOSE", "INV 1", "INV 2", "DROP 2", "OCT UP", "LOW RT", "WIDE"];
 
   const state = {
-    quality: "maj",
-    ext: "none",
     engine: "epiano",
     voicing: 0,
     octave: 0,       // -2 .. +2
@@ -699,18 +688,28 @@
   }
 
   /* ========================= Chord building ========================= */
+  // Held chord-type keys, most recent last. `latchType` is the mouse fallback:
+  // a mouse can't hold a button and tap a key at once, so clicking latches.
+  const heldTypes = [];
+  let latchType = null;
+  const currentType = () => heldTypes.length ? heldTypes[heldTypes.length - 1] : latchType;
+
   function buildChord(rootIndex) {
-    const q = QUALITIES[state.quality];
-    const ext = EXTENSIONS[state.ext];
+    const typeId = currentType();
     const rootMidi = 48 + state.octave * 12 + rootIndex; // C3-based
-    let intervals = q.intervals.concat(ext.add);
-    let notes = intervals.map((i) => rootMidi + i);
-    notes = applyVoicing(notes);
+    let notes, name;
+    if (typeId) {
+      const t = CHORD_TYPES[typeId];
+      notes = applyVoicing(t.intervals.map((i) => rootMidi + i));
+      name = NOTE_NAMES[rootIndex] + t.name;
+    } else {
+      notes = [rootMidi]; // no chord key held: plain single note
+      name = NOTE_NAMES[rootIndex];
+    }
     if (state.bass) {
       const low = rootMidi - 12;
       if (!notes.includes(low)) notes.unshift(low);
     }
-    const name = NOTE_NAMES[rootIndex] + q.name + ext.name;
     notes.sort((a, b) => a - b);
     return { name, notes };
   }
@@ -720,8 +719,10 @@
     const root = out[0];
     switch (state.voicing) {
       case 0: break;                                   // closed
-      case 1: out[0] += 12; break;                     // 1st inversion
-      case 2: out[0] += 12; out[1] += 12; break;       // 2nd inversion
+      case 1: if (out.length > 1) out[0] += 12; break; // 1st inversion
+      case 2:                                          // 2nd inversion
+        if (out.length > 2) { out[0] += 12; out[1] += 12; }
+        break;
       case 3:                                          // drop 2
         if (out.length > 2) out[out.length - 2] -= 12;
         break;
@@ -787,6 +788,8 @@
     });
     heldChords.clear();
     releaseLatched();
+    heldTypes.length = 0;
+    syncTypeButtons();
   }
 
   /* ============================== UI ================================ */
@@ -879,9 +882,52 @@
       onPick(btn.dataset[dataAttr]);
     });
   }
-  wireRow("#qualityRow", "quality", (v) => { state.quality = v; settingChanged(); });
-  wireRow("#extRow", "ext", (v) => { state.ext = v; settingChanged(); });
   wireRow("#engineRow", "engine", (v) => { state.engine = v; });
+
+  /* --- Chord-type keys: momentary hold (touch/keyboard), latch for mouse --- */
+  const typeRow = $("#typeRow");
+  const typePointers = new Map(); // pointerId -> type id
+
+  function syncTypeButtons() {
+    const cur = currentType();
+    typeRow.querySelectorAll("button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.type === cur);
+      b.classList.toggle("pressed", heldTypes.includes(b.dataset.type));
+    });
+  }
+  function typeDown(id) {
+    if (!heldTypes.includes(id)) heldTypes.push(id);
+    latchType = null;
+    syncTypeButtons();
+  }
+  function typeUp(id) {
+    const i = heldTypes.indexOf(id);
+    if (i >= 0) heldTypes.splice(i, 1);
+    syncTypeButtons();
+  }
+
+  typeRow.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const id = btn.dataset.type;
+      if (e.pointerType === "mouse") {
+        latchType = latchType === id ? null : id; // click to latch, click again to clear
+        syncTypeButtons();
+      } else {
+        typePointers.set(e.pointerId, id);
+        typeDown(id);
+      }
+    });
+  });
+  ["pointerup", "pointercancel"].forEach((ev) =>
+    window.addEventListener(ev, (e) => {
+      const id = typePointers.get(e.pointerId);
+      if (id !== undefined) {
+        typePointers.delete(e.pointerId);
+        typeUp(id);
+      }
+    })
+  );
 
   function settingChanged() {
     // Retrigger held chords with the new setting so changes are audible live.
@@ -986,24 +1032,18 @@
 
   /* --- Computer keyboard --- */
   const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, j:9, n:10, m:11 };
-  const QUALKEYS = { 1:"maj", 2:"min", 3:"dim", 4:"sus4", 5:"sus2" };
-  const EXTKEYS = { 6:"6", 7:"7", 8:"maj7", 9:"9", 0:"none" };
-
-  function pickButton(rowSel, dataAttr, value) {
-    document.querySelectorAll(`${rowSel} button`).forEach((b) =>
-      b.classList.toggle("active", b.dataset[dataAttr] === value));
-  }
+  const TYPEKEYS = { 1:"maj", 2:"min", 3:"dim", 4:"sus4", 5:"maj7", 6:"min7", 7:"dom7", 8:"six" };
 
   window.addEventListener("keydown", (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k in KEYMAP) { ensureAudio(); chordOn(KEYMAP[k]); e.preventDefault(); }
-    else if (k in QUALKEYS) { state.quality = QUALKEYS[k]; pickButton("#qualityRow", "quality", state.quality); settingChanged(); }
-    else if (k in EXTKEYS) { state.ext = EXTKEYS[k]; pickButton("#extRow", "ext", state.ext); settingChanged(); }
+    else if (k in TYPEKEYS) typeDown(TYPEKEYS[k]);
   });
   window.addEventListener("keyup", (e) => {
     const k = e.key.toLowerCase();
     if (k in KEYMAP) chordOff(KEYMAP[k]);
+    else if (k in TYPEKEYS) typeUp(TYPEKEYS[k]);
   });
   window.addEventListener("blur", releaseEverything);
 
