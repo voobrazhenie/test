@@ -174,7 +174,7 @@
     align-items: center;
     gap: 8px;
   }
-  .stepper button {
+  .stepper button, #fsBtn {
     width: 26px; height: 26px;
     border-radius: 50%;
     border: 1px solid #b3ab95;
@@ -186,7 +186,13 @@
     box-shadow: 0 2px 3px rgba(0,0,0,0.2);
     line-height: 1;
   }
-  .stepper button:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+  .stepper button:active, #fsBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+  #fsBtn { font-size: 12px; font-weight: 400; }
+  #fsBtn.active {
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    color: #fff;
+    border-color: var(--coral-dark);
+  }
   .stepper .value {
     font-family: "SF Mono", Menlo, Consolas, monospace;
     font-size: 12px;
@@ -361,6 +367,41 @@
     transition: none;
   }
 
+  /* ---------- Chord history ---------- */
+  .history {
+    display: flex;
+    gap: 10px;
+    background: var(--display-bg);
+    border-radius: 12px;
+    padding: 9px 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.45) inset, 0 1px 0 #fff;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  .history .hcell {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .history .hname {
+    font-size: 17px;
+    color: var(--display-amber);
+    text-shadow: 0 0 10px rgba(255,177,74,0.4);
+    white-space: nowrap;
+    line-height: 1.15;
+  }
+  .history .hnotes {
+    font-size: 9px;
+    color: #8f7a52;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .history .hcell.empty {
+    color: #4a4436;
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
   .footer {
     margin-top: 26px;
     font-size: 10px;
@@ -371,10 +412,43 @@
   }
   .footer a { color: #7d7663; }
 
+  /* "Zen" fallback when true fullscreen isn't available (iPhone Safari) */
+  body.zen { padding: 8px 6px 16px; }
+  body.zen h1, body.zen .subtitle, body.zen .footer { display: none; }
+
+  /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
+    html, body { padding: 10px 6px 24px; }
+    h1, .subtitle, .brand { display: none; }
+    .orchid { padding: 14px 12px 16px; border-radius: 20px; }
+    .top-row { gap: 8px; margin-bottom: 8px; }
+    .display { padding: 6px 12px; }
+    .display .chord-name { font-size: 21px; }
+    .display .chord-notes { font-size: 10px; margin-top: 2px; }
+    .controls { gap: 8px; width: 100%; justify-content: space-between; }
+    .ctl input[type=range] { width: 62px; }
+    .ctl label { font-size: 8px; }
+    .stepper { gap: 4px; }
+    .stepper .value { min-width: 38px; font-size: 11px; }
+    .section-label { margin: 9px 2px 5px; }
+    .btn-row { gap: 6px; }
+    .obtn { padding: 8px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
+    /* Chord types as a tidy 4x2 grid; sound & mode in one row of six */
+    #typeRow .obtn { flex: 1 1 calc(25% - 6px); }
+    #engineRow .obtn { flex: 1 1 calc(16.6% - 6px); }
     .obtn .kbd-hint, .key .hint { display: none; }
-    .keybed { height: 150px; }
-    .display .chord-name { font-size: 22px; }
+    .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
+    .keybed { height: 116px; padding: 6px; border-radius: 10px; }
+    .key.white { border-radius: 0 0 7px 7px; }
+    .key.white .keyname { font-size: 9px; bottom: 5px; }
+    .key.black .keyname { display: none; }
+    .strum-wrap { margin-top: 10px; }
+    .strum { height: 42px; padding: 5px; }
+    .strum .seg { font-size: 8px; padding-bottom: 3px; }
+    .history { gap: 6px; padding: 7px 10px; }
+    .history .hname, .history .hcell.empty { font-size: 13px; }
+    .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
+    .footer { margin-top: 14px; }
   }
 </style>
 </head>
@@ -420,6 +494,10 @@
           <button id="octUp" title="Octave up">+</button>
         </div>
       </div>
+      <div class="ctl">
+        <label>View</label>
+        <button id="fsBtn" title="Toggle fullscreen">⛶</button>
+      </div>
     </div>
   </div>
 
@@ -454,6 +532,11 @@
   <div class="strum-wrap">
     <div class="section-label">Strum — drag across the pads</div>
     <div class="strum" id="strum"></div>
+  </div>
+
+  <div class="history-wrap">
+    <div class="section-label">Last Chords</div>
+    <div class="history" id="history"></div>
   </div>
 </div>
 
@@ -755,6 +838,7 @@
     heldChords.set(rootIndex, { voices, notes: chord.notes });
     lastChord = chord;
     updateDisplay(chord);
+    pushHistory(chord);
     renderStrum();
     keyEl(rootIndex)?.classList.add("down");
   }
@@ -797,11 +881,47 @@
   const dispChord = $("#dispChord");
   const dispNotes = $("#dispNotes");
 
+  const notesStr = (notes) =>
+    notes.map((n) => NOTE_NAMES[n % 12] + (Math.floor(n / 12) - 1)).join("  ");
+
   function updateDisplay(chord) {
     dispChord.textContent = chord.name;
-    dispNotes.textContent = chord.notes
-      .map((n) => NOTE_NAMES[n % 12] + (Math.floor(n / 12) - 1))
-      .join("  ");
+    dispNotes.textContent = notesStr(chord.notes);
+  }
+
+  /* --- Last-four chord history --- */
+  const historyEl = $("#history");
+  const chordHistory = [];
+
+  function pushHistory(chord) {
+    const last = chordHistory[chordHistory.length - 1];
+    if (last && last.name === chord.name && last.notes.join() === chord.notes.join()) return;
+    chordHistory.push({ name: chord.name, notes: chord.notes.slice() });
+    if (chordHistory.length > 4) chordHistory.shift();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyEl.innerHTML = "";
+    for (let i = 0; i < 4; i++) {
+      const c = chordHistory[i];
+      const cell = document.createElement("div");
+      cell.className = "hcell" + (c ? "" : " empty");
+      if (c) {
+        // Oldest on the left, newest on the right; older entries fade.
+        cell.style.opacity = [1, 0.72, 0.52, 0.38][chordHistory.length - 1 - i];
+        const name = document.createElement("div");
+        name.className = "hname";
+        name.textContent = c.name;
+        const notes = document.createElement("div");
+        notes.className = "hnotes";
+        notes.textContent = notesStr(c.notes);
+        cell.append(name, notes);
+      } else {
+        cell.textContent = "·";
+      }
+      historyEl.appendChild(cell);
+    }
   }
 
   function refreshIdleDisplay() {
@@ -970,6 +1090,35 @@
     $("#octVal").textContent = (state.octave > 0 ? "+" : "") + state.octave;
   }
 
+  /* --- Fullscreen toggle --- */
+  // iPhone Safari has no element fullscreen; fall back to a "zen" mode
+  // that hides the page chrome around the instrument.
+  const fsBtn = $("#fsBtn");
+  fsBtn.addEventListener("click", async () => {
+    const el = document.documentElement;
+    const inFs = document.fullscreenElement || document.webkitFullscreenElement;
+    try {
+      if (inFs) {
+        await (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen());
+      } else if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else {
+        throw new Error("no fullscreen API");
+      }
+    } catch {
+      document.body.classList.toggle("zen");
+      fsBtn.classList.toggle("active", document.body.classList.contains("zen"));
+    }
+  });
+  ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) =>
+    document.addEventListener(ev, () => {
+      const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      fsBtn.classList.toggle("active", on);
+    })
+  );
+
   /* --- Sliders --- */
   $("#volume").addEventListener("input", (e) => { state.volume = e.target.value / 100; updateMix(); });
   $("#reverb").addEventListener("input", (e) => { state.reverb = e.target.value / 100; updateMix(); });
@@ -1050,6 +1199,7 @@
   /* --- Init --- */
   syncSteppers();
   refreshIdleDisplay();
+  renderHistory();
 })();
 </script>
 </body>
