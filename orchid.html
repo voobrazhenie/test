@@ -401,6 +401,14 @@
     font-size: 17px;
     line-height: 1.15;
   }
+  .history .hcell.playable { cursor: pointer; }
+  .history .hcell.playable:hover .hname {
+    text-shadow: 0 0 14px rgba(255,177,74,0.75);
+  }
+  .history .hcell.lit .hname {
+    color: #ffcf8e;
+    text-shadow: 0 0 18px rgba(255,177,74,0.95);
+  }
 
   .footer {
     margin-top: 26px;
@@ -412,9 +420,21 @@
   }
   .footer a { color: #7d7663; }
 
-  /* "Zen" fallback when true fullscreen isn't available (iPhone Safari) */
-  body.zen { padding: 8px 6px 16px; }
+  /* Zen / fullscreen mode: the instrument takes over the whole viewport.
+     Always applied by the View button; native fullscreen is attempted on
+     top where the browser allows it (iframes and iPhone Safari often don't). */
+  body.zen { padding: 0; }
   body.zen h1, body.zen .subtitle, body.zen .footer { display: none; }
+  body.zen .orchid {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body.zen .keybed { flex: 1; height: auto; min-height: 116px; display: flex; }
+  body.zen .white-keys { flex: 1; height: auto; }
 
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
@@ -535,7 +555,7 @@
   </div>
 
   <div class="history-wrap">
-    <div class="section-label">Last Chords</div>
+    <div class="section-label">Last Chords — press to replay</div>
     <div class="history" id="history"></div>
   </div>
 </div>
@@ -906,7 +926,7 @@
     for (let i = 0; i < 4; i++) {
       const c = chordHistory[i];
       const cell = document.createElement("div");
-      cell.className = "hcell" + (c ? "" : " empty");
+      cell.className = "hcell" + (c ? " playable" : " empty");
       if (c) {
         // Oldest on the left, newest on the right; older entries fade.
         cell.style.opacity = [1, 0.72, 0.52, 0.38][chordHistory.length - 1 - i];
@@ -917,12 +937,37 @@
         notes.className = "hnotes";
         notes.textContent = notesStr(c.notes);
         cell.append(name, notes);
+        cell.addEventListener("pointerdown", (e) => startReplay(e, c, cell));
       } else {
         cell.textContent = "·";
       }
       historyEl.appendChild(cell);
     }
   }
+
+  // Replaying a stored chord plays its exact saved voicing; it does not
+  // touch the display, the strum plate, or the history sequence itself.
+  const replayPointers = new Map(); // pointerId -> {voices, cell}
+
+  function startReplay(e, chord, cell) {
+    e.preventDefault();
+    ensureAudio();
+    const t = ctx.currentTime;
+    const voices = chord.notes.map((n, i) => playNote(n, t + i * 0.012, 0.85 - i * 0.04));
+    replayPointers.set(e.pointerId, { voices, cell });
+    cell.classList.add("lit");
+  }
+
+  ["pointerup", "pointercancel"].forEach((ev) =>
+    window.addEventListener(ev, (e) => {
+      const r = replayPointers.get(e.pointerId);
+      if (r) {
+        replayPointers.delete(e.pointerId);
+        r.voices.forEach((v) => v.stop(ctx.currentTime));
+        r.cell.classList.remove("lit");
+      }
+    })
+  );
 
   function refreshIdleDisplay() {
     // When settings change while nothing is held, preview the last root.
@@ -1091,31 +1136,31 @@
   }
 
   /* --- Fullscreen toggle --- */
-  // iPhone Safari has no element fullscreen; fall back to a "zen" mode
-  // that hides the page chrome around the instrument.
+  // Zen mode (instrument fills the viewport) always works; native
+  // fullscreen is attempted on top but is often blocked in iframes and
+  // unavailable on iPhone Safari, so it's best-effort only.
   const fsBtn = $("#fsBtn");
-  fsBtn.addEventListener("click", async () => {
-    const el = document.documentElement;
-    const inFs = document.fullscreenElement || document.webkitFullscreenElement;
+  function setZen(on) {
+    document.body.classList.toggle("zen", on);
+    fsBtn.classList.toggle("active", on);
+  }
+  fsBtn.addEventListener("click", () => {
+    const on = !document.body.classList.contains("zen");
+    setZen(on);
     try {
-      if (inFs) {
-        await (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen());
-      } else if (el.requestFullscreen) {
-        await el.requestFullscreen();
-      } else if (el.webkitRequestFullscreen) {
-        el.webkitRequestFullscreen();
-      } else {
-        throw new Error("no fullscreen API");
+      if (on) {
+        const el = document.documentElement;
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req) Promise.resolve(req.call(el)).catch(() => {});
+      } else if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
       }
-    } catch {
-      document.body.classList.toggle("zen");
-      fsBtn.classList.toggle("active", document.body.classList.contains("zen"));
-    }
+    } catch { /* zen mode alone is fine */ }
   });
+  // Leaving native fullscreen (e.g. via Esc) also leaves zen mode.
   ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) =>
     document.addEventListener(ev, () => {
-      const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
-      fsBtn.classList.toggle("active", on);
+      if (!(document.fullscreenElement || document.webkitFullscreenElement)) setZen(false);
     })
   );
 
