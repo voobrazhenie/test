@@ -378,6 +378,43 @@
   }
 
   /* ---------- Chord history ---------- */
+  .history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .history-ctl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 2px 6px;
+  }
+  .bpm-tag {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #7d7663;
+  }
+  #playBtn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--coral-dark);
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    color: #fff;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.25);
+    line-height: 1;
+    padding: 0;
+  }
+  #playBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  #playBtn.on {
+    filter: brightness(1.12);
+    outline: 3px solid rgba(244,80,44,0.35);
+    outline-offset: 2px;
+  }
   .history {
     display: flex;
     gap: 10px;
@@ -391,7 +428,31 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
+  .history .hmain {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .history .hinv {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .history .hinv button {
+    background: none;
+    border: none;
+    padding: 0 3px;
+    color: #6b5c3f;
+    font-size: 9px;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .history .hinv button:hover { color: var(--display-amber); }
+  .history .hinv button:active { transform: translateY(1px); }
   .history .hname {
     font-size: 17px;
     color: var(--display-amber);
@@ -493,6 +554,9 @@
     .history { gap: 6px; padding: 7px 10px; }
     .history .hname, .history .hcell.empty { font-size: 13px; }
     .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
+    .history .hcell { gap: 3px; }
+    .history .hinv button { font-size: 8px; padding: 0 2px; }
+    .history-ctl { margin: 6px 2px 4px; }
     .footer { margin-top: 14px; }
   }
 </style>
@@ -580,7 +644,18 @@
   </div>
 
   <div class="history-wrap">
-    <div class="section-label">Last Chords — press to replay</div>
+    <div class="history-head">
+      <div class="section-label">Last Chords — press to replay</div>
+      <div class="history-ctl">
+        <button id="playBtn" title="Play the sequence in a loop">&#9654;</button>
+        <div class="stepper">
+          <button id="bpmDown" title="Slower">−</button>
+          <span class="value" id="bpmVal">80</span>
+          <button id="bpmUp" title="Faster">+</button>
+        </div>
+        <span class="bpm-tag">BPM</span>
+      </div>
+    </div>
     <div class="history" id="history"></div>
   </div>
 </div>
@@ -624,6 +699,7 @@
     octave: 0,       // -2 .. +2
     hold: false,
     bass: false,
+    bpm: 80,
     volume: 0.8,
     reverb: 0.35,
   };
@@ -965,7 +1041,23 @@
         const notes = document.createElement("div");
         notes.className = "hnotes";
         notes.textContent = notesStr(c.notes);
-        cell.append(name, notes);
+        const main = document.createElement("div");
+        main.className = "hmain";
+        main.append(name, notes);
+        const inv = document.createElement("div");
+        inv.className = "hinv";
+        [["▲", 1], ["▼", -1]].forEach(([glyph, dir]) => {
+          const b = document.createElement("button");
+          b.textContent = glyph;
+          b.title = dir > 0 ? "Inversion up" : "Inversion down";
+          b.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            invertChord(c, dir);
+          });
+          inv.appendChild(b);
+        });
+        cell.append(main, inv);
         cell.addEventListener("pointerdown", (e) => startReplay(e, c, cell));
       } else {
         cell.textContent = "·";
@@ -973,6 +1065,63 @@
       historyEl.appendChild(cell);
     }
   }
+
+  // Re-voice a saved chord in place: up moves the lowest note up an octave,
+  // down moves the highest note down an octave. Order in the sequence and
+  // the chord's name stay untouched; a short preview makes the change audible.
+  function invertChord(c, dir) {
+    const notes = c.notes.slice().sort((a, b) => a - b);
+    if (dir > 0) notes.push(notes.shift() + 12);
+    else notes.unshift(notes.pop() - 12);
+    if (notes[0] < 24 || notes[notes.length - 1] > 103) return; // keep in range
+    c.notes = notes.sort((a, b) => a - b);
+    renderHistory();
+    ensureAudio();
+    const t = ctx.currentTime;
+    c.notes.forEach((n, i) => playNote(n, t + i * 0.01, 0.7).stop(t + 0.5));
+  }
+
+  /* --- Sequence playback --- */
+  const playBtn = $("#playBtn");
+  let playing = false, playTimer = null, playIndex = 0;
+
+  function setPlaying(on) {
+    playing = on;
+    playBtn.textContent = on ? "■" : "▶";
+    playBtn.classList.toggle("on", on);
+    if (!on && playTimer) { clearTimeout(playTimer); playTimer = null; }
+  }
+
+  playBtn.addEventListener("click", () => {
+    if (playing) { setPlaying(false); return; }
+    if (!chordHistory.length) return;
+    ensureAudio();
+    setPlaying(true);
+    playIndex = 0;
+    playStep();
+  });
+
+  function playStep() {
+    if (!playing) return;
+    if (!chordHistory.length) { setPlaying(false); return; }
+    const i = playIndex % chordHistory.length;
+    const c = chordHistory[i];
+    const beat = 60 / state.bpm;
+    const t = ctx.currentTime;
+    c.notes.forEach((n, k) =>
+      playNote(n, t + k * 0.01, 0.85 - k * 0.04).stop(t + Math.max(0.15, beat * 0.9))
+    );
+    const cell = historyEl.children[i];
+    if (cell) {
+      cell.classList.add("lit");
+      setTimeout(() => cell.classList.remove("lit"), Math.min(beat * 800, 500));
+    }
+    playIndex++;
+    playTimer = setTimeout(playStep, beat * 1000);
+  }
+
+  step("#bpmUp",   () => { state.bpm = Math.min(240, state.bpm + 5); $("#bpmVal").textContent = state.bpm; });
+  step("#bpmDown", () => { state.bpm = Math.max(40,  state.bpm - 5); $("#bpmVal").textContent = state.bpm; });
 
   // Replaying a stored chord plays its exact saved voicing; it does not
   // touch the display, the strum plate, or the history sequence itself.
