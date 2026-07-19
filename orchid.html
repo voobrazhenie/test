@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Orchid — Digital Chord Synth</title>
+<!-- pwa:start -->
+<meta name="theme-color" content="#f3eee3">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Orchid">
+<!-- pwa:end -->
 <style>
   :root {
     --body-cream: #f3eee3;
@@ -419,6 +429,21 @@
     max-width: 640px;
   }
   .footer a { color: #7d7663; }
+  #installBtn {
+    margin-top: 12px;
+    padding: 9px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    box-shadow: 0 3px 0 var(--coral-dark), 0 5px 8px rgba(60,20,5,0.3);
+    cursor: pointer;
+  }
+  #installBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--coral-dark); }
 
   /* Zen / fullscreen mode: the instrument takes over the whole viewport.
      Always applied by the View button; native fullscreen is attempted on
@@ -568,6 +593,10 @@
   This is an unofficial fan-made web tribute to the
   <a href="https://telepathicinstruments.com" target="_blank" rel="noopener">Orchid by Telepathic Instruments</a>
   and is not affiliated with or endorsed by them.
+  <!-- pwa:start -->
+  <br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
+  <button id="installBtn" hidden>Install as app</button>
+  <!-- pwa:end -->
 </div>
 
 <script>
@@ -1240,6 +1269,29 @@
     else if (k in TYPEKEYS) typeUp(TYPEKEYS[k]);
   });
   window.addEventListener("blur", releaseEverything);
+
+  /* pwa:start */
+  /* --- Installable app: service worker + install prompt --- */
+  if ("serviceWorker" in navigator &&
+      (location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname))) {
+    addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
+  let installPrompt = null;
+  const installBtn = $("#installBtn");
+  addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    installBtn.hidden = false;
+  });
+  installBtn.addEventListener("click", async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    await installPrompt.userChoice.catch(() => {});
+    installPrompt = null;
+    installBtn.hidden = true;
+  });
+  addEventListener("appinstalled", () => { installBtn.hidden = true; });
+  /* pwa:end */
 
   /* --- Init --- */
   syncSteppers();
