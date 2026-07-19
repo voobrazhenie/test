@@ -415,6 +415,20 @@
     outline: 3px solid rgba(244,80,44,0.35);
     outline-offset: 2px;
   }
+  #midiBtn {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
+    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    cursor: grab;
+  }
+  #midiBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; cursor: grabbing; }
+  #midiBtn.disabled { opacity: 0.45; cursor: default; }
   .history {
     display: flex;
     gap: 10px;
@@ -565,6 +579,7 @@
     .history .hinv { gap: 3px; }
     .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
     .history-ctl { margin: 4px 2px 2px; }
+    #midiBtn { display: none; } /* drag-out export is a desktop affair */
     .footer { margin-top: 14px; }
   }
 </style>
@@ -662,6 +677,8 @@
           <button id="bpmUp" title="Faster">+</button>
         </div>
         <span class="bpm-tag">BPM</span>
+        <button id="midiBtn" draggable="true"
+          title="Click to download the sequence as MIDI — or drag this straight into your DAW">MIDI&nbsp;&#10515;</button>
       </div>
     </div>
     <div class="history" id="history"></div>
@@ -1072,6 +1089,7 @@
       }
       historyEl.appendChild(cell);
     }
+    midiBtn.classList.toggle("disabled", !chordHistory.length);
   }
 
   // Re-voice a saved chord in place: up moves the lowest note up an octave,
@@ -1130,6 +1148,64 @@
 
   step("#bpmUp",   () => { state.bpm = Math.min(240, state.bpm + 5); $("#bpmVal").textContent = state.bpm; });
   step("#bpmDown", () => { state.bpm = Math.max(40,  state.bpm - 5); $("#bpmVal").textContent = state.bpm; });
+
+  /* --- MIDI export: click to download, or drag straight into a DAW --- */
+  // Standard MIDI File (format 0, 480 ticks/quarter) of the Last Chords
+  // sequence at the current BPM, one chord per beat — same as playback.
+  const midiBtn = $("#midiBtn");
+
+  function buildMidiFile() {
+    const TPQ = 480;
+    const mpq = Math.round(60000000 / state.bpm);
+    const events = [
+      { tick: 0, data: [0xff, 0x51, 0x03, (mpq >> 16) & 255, (mpq >> 8) & 255, mpq & 255] },
+    ];
+    chordHistory.forEach((c, i) => {
+      const t0 = i * TPQ;
+      c.notes.forEach((n) => events.push({ tick: t0, data: [0x90, n, 96] }));
+      c.notes.forEach((n) => events.push({ tick: t0 + TPQ - 10, data: [0x80, n, 0] }));
+    });
+    events.push({ tick: chordHistory.length * TPQ, data: [0xff, 0x2f, 0x00] });
+    events.sort((a, b) => a.tick - b.tick);
+
+    const track = [];
+    let prev = 0;
+    for (const e of events) {
+      let d = e.tick - prev;
+      prev = e.tick;
+      const vlq = [d & 0x7f];
+      while ((d >>= 7)) vlq.unshift((d & 0x7f) | 0x80);
+      track.push(...vlq, ...e.data);
+    }
+    const u32 = (n) => [(n >> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255];
+    return new Uint8Array([
+      0x4d, 0x54, 0x68, 0x64, ...u32(6), 0, 0, 0, 1, (TPQ >> 8) & 255, TPQ & 255, // MThd
+      0x4d, 0x54, 0x72, 0x6b, ...u32(track.length), ...track,                     // MTrk
+    ]);
+  }
+
+  const midiFilename = () =>
+    `orchid-${chordHistory.map((c) => c.name.replace(/#/g, "s")).join("-") || "chords"}.mid`;
+
+  function midiDataUrl() {
+    let s = "";
+    buildMidiFile().forEach((b) => (s += String.fromCharCode(b)));
+    return "data:audio/midi;base64," + btoa(s);
+  }
+
+  midiBtn.addEventListener("click", () => {
+    if (!chordHistory.length) return;
+    const a = document.createElement("a");
+    a.href = midiDataUrl();
+    a.download = midiFilename();
+    a.click();
+  });
+  midiBtn.addEventListener("dragstart", (e) => {
+    if (!chordHistory.length) { e.preventDefault(); return; }
+    e.dataTransfer.effectAllowed = "copy";
+    // Chromium: dragging this out of the browser drops a real .mid file.
+    e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${midiDataUrl()}`);
+  });
 
   // Replaying a stored chord plays its exact saved voicing; it does not
   // touch the display, the strum plate, or the history sequence itself.
@@ -1411,7 +1487,7 @@
   });
 
   /* --- Computer keyboard --- */
-  const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, j:9, n:10, m:11 };
+  const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, n:9, j:10, m:11 };
   const TYPEKEYS = { 1:"maj", 2:"min", 3:"dim", 4:"sus4", 5:"maj7", 6:"min7", 7:"dom7", 8:"six" };
 
   window.addEventListener("keydown", (e) => {
