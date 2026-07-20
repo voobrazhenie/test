@@ -378,6 +378,57 @@
   }
 
   /* ---------- Chord history ---------- */
+  .history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .history-ctl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 2px 6px;
+  }
+  .bpm-tag {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #7d7663;
+  }
+  #playBtn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--coral-dark);
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    color: #fff;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.25);
+    line-height: 1;
+    padding: 0;
+  }
+  #playBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  #playBtn.on {
+    filter: brightness(1.12);
+    outline: 3px solid rgba(244,80,44,0.35);
+    outline-offset: 2px;
+  }
+  #midiBtn {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
+    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    cursor: grab;
+  }
+  #midiBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; cursor: grabbing; }
+  #midiBtn.disabled { opacity: 0.45; cursor: default; }
   .history {
     display: flex;
     gap: 10px;
@@ -391,7 +442,38 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
+  .history .hmain {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .history .hinv {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .history .hinv button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 21px;
+    background: rgba(255,177,74,0.10);
+    border: none;
+    border-radius: 6px;
+    padding: 0;
+    color: #a08a5c;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .history .hinv button:hover { color: var(--display-amber); background: rgba(255,177,74,0.18); }
+  .history .hinv button:active { transform: translateY(1px); background: rgba(255,177,74,0.25); }
   .history .hname {
     font-size: 17px;
     color: var(--display-amber);
@@ -475,7 +557,7 @@
     .ctl label { font-size: 8px; }
     .stepper { gap: 4px; }
     .stepper .value { min-width: 38px; font-size: 11px; }
-    .section-label { margin: 9px 2px 5px; }
+    .section-label { margin: 8px 2px 4px; }
     .btn-row { gap: 6px; }
     .obtn { padding: 8px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
     /* Chord types as a tidy 4x2 grid; sound & mode in one row of six */
@@ -488,11 +570,16 @@
     .key.white .keyname { font-size: 9px; bottom: 5px; }
     .key.black .keyname { display: none; }
     .strum-wrap { margin-top: 10px; }
-    .strum { height: 42px; padding: 5px; }
+    .strum { height: 38px; padding: 5px; }
     .strum .seg { font-size: 8px; padding-bottom: 3px; }
-    .history { gap: 6px; padding: 7px 10px; }
+    .history { gap: 6px; padding: 6px 10px; }
     .history .hname, .history .hcell.empty { font-size: 13px; }
     .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
+    .history .hcell { gap: 4px; }
+    .history .hinv { gap: 3px; }
+    .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
+    .history-ctl { margin: 4px 2px 2px; }
+    #midiBtn { display: none; } /* drag-out export is a desktop affair */
     .footer { margin-top: 14px; }
   }
 </style>
@@ -580,7 +667,20 @@
   </div>
 
   <div class="history-wrap">
-    <div class="section-label">Last Chords — press to replay</div>
+    <div class="history-head">
+      <div class="section-label">Last Chords — press to replay</div>
+      <div class="history-ctl">
+        <button id="playBtn" title="Play the sequence in a loop">&#9654;</button>
+        <div class="stepper">
+          <button id="bpmDown" title="Slower">−</button>
+          <span class="value" id="bpmVal">80</span>
+          <button id="bpmUp" title="Faster">+</button>
+        </div>
+        <span class="bpm-tag">BPM</span>
+        <button id="midiBtn" draggable="true"
+          title="Click to download the sequence as MIDI — or drag this straight into your DAW">MIDI&nbsp;&#10515;</button>
+      </div>
+    </div>
     <div class="history" id="history"></div>
   </div>
 </div>
@@ -624,6 +724,7 @@
     octave: 0,       // -2 .. +2
     hold: false,
     bass: false,
+    bpm: 80,
     volume: 0.8,
     reverb: 0.35,
   };
@@ -943,8 +1044,8 @@
   const chordHistory = [];
 
   function pushHistory(chord) {
-    const last = chordHistory[chordHistory.length - 1];
-    if (last && last.name === chord.name && last.notes.join() === chord.notes.join()) return;
+    // Every strike is recorded, repeats included, so a chord can
+    // deliberately occupy several slots of the sequence.
     chordHistory.push({ name: chord.name, notes: chord.notes.slice() });
     if (chordHistory.length > 4) chordHistory.shift();
     renderHistory();
@@ -965,14 +1066,146 @@
         const notes = document.createElement("div");
         notes.className = "hnotes";
         notes.textContent = notesStr(c.notes);
-        cell.append(name, notes);
+        const main = document.createElement("div");
+        main.className = "hmain";
+        main.append(name, notes);
+        const inv = document.createElement("div");
+        inv.className = "hinv";
+        [["▲", 1], ["▼", -1]].forEach(([glyph, dir]) => {
+          const b = document.createElement("button");
+          b.textContent = glyph;
+          b.title = dir > 0 ? "Inversion up" : "Inversion down";
+          b.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            invertChord(c, dir);
+          });
+          inv.appendChild(b);
+        });
+        cell.append(main, inv);
         cell.addEventListener("pointerdown", (e) => startReplay(e, c, cell));
       } else {
         cell.textContent = "·";
       }
       historyEl.appendChild(cell);
     }
+    midiBtn.classList.toggle("disabled", !chordHistory.length);
   }
+
+  // Re-voice a saved chord in place: up moves the lowest note up an octave,
+  // down moves the highest note down an octave. Order in the sequence and
+  // the chord's name stay untouched; a short preview makes the change audible.
+  function invertChord(c, dir) {
+    const notes = c.notes.slice().sort((a, b) => a - b);
+    if (dir > 0) notes.push(notes.shift() + 12);
+    else notes.unshift(notes.pop() - 12);
+    if (notes[0] < 24 || notes[notes.length - 1] > 103) return; // keep in range
+    c.notes = notes.sort((a, b) => a - b);
+    renderHistory();
+    ensureAudio();
+    const t = ctx.currentTime;
+    c.notes.forEach((n, i) => playNote(n, t + i * 0.01, 0.7).stop(t + 0.5));
+  }
+
+  /* --- Sequence playback --- */
+  const playBtn = $("#playBtn");
+  let playing = false, playTimer = null, playIndex = 0;
+
+  function setPlaying(on) {
+    playing = on;
+    playBtn.textContent = on ? "■" : "▶";
+    playBtn.classList.toggle("on", on);
+    if (!on && playTimer) { clearTimeout(playTimer); playTimer = null; }
+  }
+
+  playBtn.addEventListener("click", () => {
+    if (playing) { setPlaying(false); return; }
+    if (!chordHistory.length) return;
+    ensureAudio();
+    setPlaying(true);
+    playIndex = 0;
+    playStep();
+  });
+
+  function playStep() {
+    if (!playing) return;
+    if (!chordHistory.length) { setPlaying(false); return; }
+    const i = playIndex % chordHistory.length;
+    const c = chordHistory[i];
+    const beat = 60 / state.bpm;
+    const t = ctx.currentTime;
+    c.notes.forEach((n, k) =>
+      playNote(n, t + k * 0.01, 0.85 - k * 0.04).stop(t + Math.max(0.15, beat * 0.9))
+    );
+    const cell = historyEl.children[i];
+    if (cell) {
+      cell.classList.add("lit");
+      setTimeout(() => cell.classList.remove("lit"), Math.min(beat * 800, 500));
+    }
+    playIndex++;
+    playTimer = setTimeout(playStep, beat * 1000);
+  }
+
+  step("#bpmUp",   () => { state.bpm = Math.min(240, state.bpm + 5); $("#bpmVal").textContent = state.bpm; });
+  step("#bpmDown", () => { state.bpm = Math.max(40,  state.bpm - 5); $("#bpmVal").textContent = state.bpm; });
+
+  /* --- MIDI export: click to download, or drag straight into a DAW --- */
+  // Standard MIDI File (format 0, 480 ticks/quarter) of the Last Chords
+  // sequence at the current BPM, one chord per beat — same as playback.
+  const midiBtn = $("#midiBtn");
+
+  function buildMidiFile() {
+    const TPQ = 480;
+    const mpq = Math.round(60000000 / state.bpm);
+    const events = [
+      { tick: 0, data: [0xff, 0x51, 0x03, (mpq >> 16) & 255, (mpq >> 8) & 255, mpq & 255] },
+    ];
+    chordHistory.forEach((c, i) => {
+      const t0 = i * TPQ;
+      c.notes.forEach((n) => events.push({ tick: t0, data: [0x90, n, 96] }));
+      c.notes.forEach((n) => events.push({ tick: t0 + TPQ - 10, data: [0x80, n, 0] }));
+    });
+    events.push({ tick: chordHistory.length * TPQ, data: [0xff, 0x2f, 0x00] });
+    events.sort((a, b) => a.tick - b.tick);
+
+    const track = [];
+    let prev = 0;
+    for (const e of events) {
+      let d = e.tick - prev;
+      prev = e.tick;
+      const vlq = [d & 0x7f];
+      while ((d >>= 7)) vlq.unshift((d & 0x7f) | 0x80);
+      track.push(...vlq, ...e.data);
+    }
+    const u32 = (n) => [(n >> 24) & 255, (n >> 16) & 255, (n >> 8) & 255, n & 255];
+    return new Uint8Array([
+      0x4d, 0x54, 0x68, 0x64, ...u32(6), 0, 0, 0, 1, (TPQ >> 8) & 255, TPQ & 255, // MThd
+      0x4d, 0x54, 0x72, 0x6b, ...u32(track.length), ...track,                     // MTrk
+    ]);
+  }
+
+  const midiFilename = () =>
+    `orchid-${chordHistory.map((c) => c.name.replace(/#/g, "s")).join("-") || "chords"}.mid`;
+
+  function midiDataUrl() {
+    let s = "";
+    buildMidiFile().forEach((b) => (s += String.fromCharCode(b)));
+    return "data:audio/midi;base64," + btoa(s);
+  }
+
+  midiBtn.addEventListener("click", () => {
+    if (!chordHistory.length) return;
+    const a = document.createElement("a");
+    a.href = midiDataUrl();
+    a.download = midiFilename();
+    a.click();
+  });
+  midiBtn.addEventListener("dragstart", (e) => {
+    if (!chordHistory.length) { e.preventDefault(); return; }
+    e.dataTransfer.effectAllowed = "copy";
+    // Chromium: dragging this out of the browser drops a real .mid file.
+    e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${midiDataUrl()}`);
+  });
 
   // Replaying a stored chord plays its exact saved voicing; it does not
   // touch the display, the strum plate, or the history sequence itself.
@@ -1254,7 +1487,7 @@
   });
 
   /* --- Computer keyboard --- */
-  const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, j:9, n:10, m:11 };
+  const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, n:9, j:10, m:11 };
   const TYPEKEYS = { 1:"maj", 2:"min", 3:"dim", 4:"sus4", 5:"maj7", 6:"min7", 7:"dom7", 8:"six" };
 
   window.addEventListener("keydown", (e) => {
