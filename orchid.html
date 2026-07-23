@@ -274,6 +274,63 @@
     letter-spacing: 0.05em;
   }
 
+  /* ---------- Live MIDI Out ---------- */
+  .midiout-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #midiOutBtn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
+    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #midiOutBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; }
+  #midiOutBtn.active {
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    color: #fff;
+    box-shadow: 0 2px 0 var(--coral-dark), 0 3px 5px rgba(60,20,5,0.25);
+  }
+  #midiPortSelect {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #b3ab95;
+    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    color: var(--ink);
+    cursor: pointer;
+    max-width: 220px;
+  }
+  #midiPortSelect:disabled { opacity: 0.55; cursor: default; }
+  .midi-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #7d7663;
+    letter-spacing: 0.02em;
+  }
+  .midi-status .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #b3ab95;
+    flex: none;
+  }
+  .midi-status .dot.live { background: var(--coral); box-shadow: 0 0 6px rgba(244,80,44,0.6); }
+  .midi-status .dot.error { background: #b0392b; }
+  .midi-status .dot.flash { animation: midiflash 0.15s ease; }
+  @keyframes midiflash { from { transform: scale(1.8); } to { transform: scale(1); } }
+
   /* ---------- Keyboard ---------- */
   .keybed {
     position: relative;
@@ -580,6 +637,7 @@
     .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
     .history-ctl { margin: 4px 2px 2px; }
     #midiBtn { display: none; } /* drag-out export is a desktop affair */
+    #midiSection { display: none; } /* LoopBe/loopMIDI + a DAW is a desktop workflow */
     .footer { margin-top: 14px; }
   }
 </style>
@@ -653,6 +711,17 @@
     <button class="obtn gray" data-engine="pluck">PLUCK</button>
     <button class="obtn" id="holdBtn" title="Latch the chord so you can strum it">HOLD</button>
     <button class="obtn" id="bassBtn" title="Add a low root note">BASS</button>
+  </div>
+
+  <div class="midi-section" id="midiSection">
+    <div class="section-label">MIDI Out — stream live notes to a DAW (e.g. via LoopBe / loopMIDI)</div>
+    <div class="midiout-row">
+      <button id="midiOutBtn" title="Connect a system MIDI output port">MIDI OUT</button>
+      <select id="midiPortSelect" title="Choose the MIDI output port" disabled>
+        <option>—</option>
+      </select>
+      <span class="midi-status" id="midiStatus"><span class="dot" id="midiDot"></span><span id="midiStatusText">Off</span></span>
+    </div>
   </div>
 
   <div class="section-label">Keys</div>
@@ -780,6 +849,40 @@
   }
 
   const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+  /* --- Live MIDI Out: mirror played notes to a system MIDI port, e.g. a
+     LoopBe/loopMIDI virtual cable feeding a DAW track in real time --- */
+  let midiAccess = null, midiOutput = null, midiOutOn = false;
+
+  function scheduleMidi(fn, delayMs) {
+    if (delayMs < 2) fn(); else setTimeout(fn, delayMs);
+  }
+  function sendMidiNoteOn(port, note, vel, time) {
+    const velocity = Math.max(1, Math.min(127, Math.round(vel * 127)));
+    const delay = ctx ? Math.max(0, (time - ctx.currentTime) * 1000) : 0;
+    scheduleMidi(() => {
+      try { port.send([0x90, note, velocity]); flashMidiDot(); } catch {}
+    }, delay);
+  }
+  function sendMidiNoteOff(port, note, time) {
+    const delay = ctx ? Math.max(0, (time - ctx.currentTime) * 1000) : 0;
+    scheduleMidi(() => {
+      try { port.send([0x80, note, 0]); } catch {}
+    }, delay);
+  }
+  // Belt-and-suspenders panic: All Notes Off + All Sound Off, so switching
+  // or disabling the output never leaves a stuck note ringing in the DAW.
+  function panicMidi(port) {
+    if (!port) return;
+    try { port.send([0xb0, 123, 0]); port.send([0xb0, 120, 0]); } catch {}
+  }
+  function flashMidiDot() {
+    const dot = document.getElementById("midiDot");
+    if (!dot) return;
+    dot.classList.remove("flash");
+    void dot.offsetWidth;
+    dot.classList.add("flash");
+  }
 
   /* --- Sound engines: each returns {stop(time)} and self-connects to master --- */
   const ENGINES = {
@@ -917,7 +1020,14 @@
   };
 
   function playNote(midi, time, vel) {
-    return ENGINES[state.engine](midiToFreq(midi), time, vel);
+    const voice = ENGINES[state.engine](midiToFreq(midi), time, vel);
+    if (midiOutOn && midiOutput) {
+      const port = midiOutput; // captured now, so note-off always targets the port that got the note-on
+      sendMidiNoteOn(port, midi, vel, time);
+      const origStop = voice.stop;
+      voice.stop = (t) => { origStop(t); sendMidiNoteOff(port, midi, t); };
+    }
+    return voice;
   }
 
   /* ========================= Chord building ========================= */
@@ -1206,6 +1316,96 @@
     // Chromium: dragging this out of the browser drops a real .mid file.
     e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${midiDataUrl()}`);
   });
+
+  /* --- Live MIDI Out UI: pick a port, connect, stay panic-safe --- */
+  const midiOutBtn = $("#midiOutBtn");
+  const midiPortSelect = $("#midiPortSelect");
+  const midiDot = $("#midiDot");
+  const midiStatusText = $("#midiStatusText");
+
+  function setMidiStatus(text, mode) {
+    midiStatusText.textContent = text;
+    midiDot.classList.remove("live", "error");
+    if (mode) midiDot.classList.add(mode);
+  }
+
+  function populateMidiPorts() {
+    midiPortSelect.innerHTML = "";
+    const ports = midiAccess ? [...midiAccess.outputs.values()] : [];
+    if (!ports.length) {
+      const opt = document.createElement("option");
+      opt.textContent = "No MIDI outputs found";
+      midiPortSelect.appendChild(opt);
+      midiPortSelect.disabled = true;
+      midiOutput = null;
+      setMidiStatus("No ports — start LoopBe/loopMIDI, then click MIDI OUT again", "error");
+      return;
+    }
+    midiPortSelect.disabled = false;
+    ports.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name || p.id;
+      midiPortSelect.appendChild(opt);
+    });
+    // Keep the current port if it's still there; only fall back on first
+    // pick or if it disconnected, so a device hotplug doesn't jump ports.
+    const keepCurrent = midiOutput && ports.find((p) => p.id === midiOutput.id);
+    const saved = localStorage.getItem("orchid-midi-port-name");
+    const pick = keepCurrent
+      || ports.find((p) => p.name === saved)
+      || ports.find((p) => /loopbe|loopmidi/i.test(p.name || ""))
+      || ports[0];
+    midiPortSelect.value = pick.id;
+    selectMidiOutput(pick);
+  }
+
+  function selectMidiOutput(port) {
+    midiOutput = port || null;
+    if (port) {
+      localStorage.setItem("orchid-midi-port-name", port.name || "");
+      setMidiStatus("→ " + (port.name || "MIDI output"), "live");
+    }
+  }
+
+  midiPortSelect.addEventListener("change", () => {
+    const prev = midiOutput;
+    const next = midiAccess ? midiAccess.outputs.get(midiPortSelect.value) : null;
+    if (prev && prev !== next) panicMidi(prev);
+    selectMidiOutput(next || null);
+  });
+
+  midiOutBtn.addEventListener("click", async () => {
+    if (midiOutOn) {
+      midiOutOn = false;
+      midiOutBtn.classList.remove("active");
+      panicMidi(midiOutput);
+      setMidiStatus("Off", null);
+      return;
+    }
+    if (!navigator.requestMIDIAccess) {
+      setMidiStatus("Not supported — try Chrome or Edge on desktop", "error");
+      return;
+    }
+    setMidiStatus("Requesting MIDI access…", null);
+    try {
+      midiAccess = await navigator.requestMIDIAccess();
+    } catch {
+      setMidiStatus("MIDI access denied", "error");
+      return;
+    }
+    midiAccess.onstatechange = () => populateMidiPorts();
+    populateMidiPorts();
+    midiOutOn = true;
+    midiOutBtn.classList.add("active");
+  });
+
+  if (!navigator.requestMIDIAccess) {
+    setMidiStatus("Not supported — try Chrome or Edge on desktop", "error");
+  }
+
+  // Best-effort safety net if the tab closes while MIDI is connected.
+  window.addEventListener("pagehide", () => panicMidi(midiOutput));
 
   // Replaying a stored chord plays its exact saved voicing; it does not
   // touch the display, the strum plate, or the history sequence itself.
