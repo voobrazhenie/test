@@ -1084,11 +1084,14 @@
     return out;
   }
 
-  // 1 OCT mode: fold every note to the pitch, within one octave above the
-  // root, that shares its pitch class — collapsing whatever the voicing
-  // spread out back into a tight close-position shape anchored at the root.
+  // 1 OCT mode: shift every note by whole octaves until it falls in the same
+  // labeled octave (the same C-to-B span) as the root. A triad can be under
+  // 12 semitones wide and still cross that boundary — e.g. root-position Am
+  // is A3-C4-E4, just 7 semitones apart — so this checks octave *labels*,
+  // not the raw semitone distance from the root.
   function foldToOneOctave(notes, anchor) {
-    const folded = notes.map((n) => anchor + (((n - anchor) % 12) + 12) % 12);
+    const targetOct = Math.floor(anchor / 12);
+    const folded = notes.map((n) => n + (targetOct - Math.floor(n / 12)) * 12);
     return [...new Set(folded)]; // voicings like WIDE/OCT UP can fold onto the same pitch twice
   }
 
