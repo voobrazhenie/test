@@ -619,7 +619,7 @@
     .obtn { padding: 8px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
     /* Chord types as a tidy 4x2 grid; sound & mode in one row of six */
     #typeRow .obtn { flex: 1 1 calc(25% - 6px); }
-    #engineRow .obtn { flex: 1 1 calc(16.6% - 6px); }
+    #engineRow .obtn { flex: 1 1 calc(25% - 6px); }
     .obtn .kbd-hint, .key .hint { display: none; }
     .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
     .keybed { height: 116px; padding: 6px; border-radius: 10px; }
@@ -711,6 +711,8 @@
     <button class="obtn gray" data-engine="pluck">PLUCK</button>
     <button class="obtn" id="holdBtn" title="Latch the chord so you can strum it">HOLD</button>
     <button class="obtn" id="bassBtn" title="Add a low root note">BASS</button>
+    <button class="obtn" id="octLockBtn" title="Keep every chord note within one octave of the root">1 OCT</button>
+    <button class="obtn" id="arpBtn" title="Play chord notes as a quick arpeggio instead of together">ARP</button>
   </div>
 
   <div class="midi-section" id="midiSection">
@@ -793,6 +795,8 @@
     octave: 0,       // -2 .. +2
     hold: false,
     bass: false,
+    octLock: false,
+    arp: false,
     bpm: 80,
     volume: 0.8,
     reverb: 0.35,
@@ -1044,6 +1048,7 @@
     if (typeId) {
       const t = CHORD_TYPES[typeId];
       notes = applyVoicing(t.intervals.map((i) => rootMidi + i));
+      if (state.octLock) notes = foldToOneOctave(notes, rootMidi);
       name = NOTE_NAMES[rootIndex] + t.name;
     } else {
       notes = [rootMidi]; // no chord key held: plain single note
@@ -1079,6 +1084,20 @@
     return out;
   }
 
+  // 1 OCT mode: fold every note to the pitch, within one octave above the
+  // root, that shares its pitch class — collapsing whatever the voicing
+  // spread out back into a tight close-position shape anchored at the root.
+  function foldToOneOctave(notes, anchor) {
+    const folded = notes.map((n) => anchor + (((n - anchor) % 12) + 12) % 12);
+    return [...new Set(folded)]; // voicings like WIDE/OCT UP can fold onto the same pitch twice
+  }
+
+  // Per-note onset delay when triggering a chord's notes together: a tiny
+  // humanizing roll normally, or a musical 16th-note arpeggio when ARP is on.
+  function noteStagger(i) {
+    return state.arp ? i * (60 / state.bpm / 4) : i * 0.012;
+  }
+
   /* ========================= Playback state ========================= */
   const heldChords = new Map(); // rootIndex -> {voices:[], notes:[]}
   let latched = null;           // {rootIndex, voices, notes} when HOLD is on
@@ -1093,7 +1112,7 @@
     const chord = buildChord(rootIndex);
     const t = ctx.currentTime;
     const voices = chord.notes.map((n, i) =>
-      playNote(n, t + i * 0.012, 0.9 - i * 0.04) // tiny humanizing roll
+      playNote(n, t + noteStagger(i), 0.9 - i * 0.04)
     );
     heldChords.set(rootIndex, { voices, notes: chord.notes });
     lastChord = chord;
@@ -1214,7 +1233,10 @@
     renderHistory();
     ensureAudio();
     const t = ctx.currentTime;
-    c.notes.forEach((n, i) => playNote(n, t + i * 0.01, 0.7).stop(t + 0.5));
+    c.notes.forEach((n, i) => {
+      const delay = noteStagger(i);
+      playNote(n, t + delay, 0.7).stop(t + delay + 0.5);
+    });
   }
 
   /* --- Sequence playback --- */
@@ -1242,18 +1264,19 @@
     if (!chordHistory.length) { setPlaying(false); return; }
     const i = playIndex % chordHistory.length;
     const c = chordHistory[i];
-    const beat = 60 / state.bpm;
+    const bar = (60 / state.bpm) * 2; // each chord holds for two beats
     const t = ctx.currentTime;
-    c.notes.forEach((n, k) =>
-      playNote(n, t + k * 0.01, 0.85 - k * 0.04).stop(t + Math.max(0.15, beat * 0.9))
-    );
+    c.notes.forEach((n, k) => {
+      const delay = noteStagger(k);
+      playNote(n, t + delay, 0.85 - k * 0.04).stop(t + delay + Math.max(0.3, bar * 0.9));
+    });
     const cell = historyEl.children[i];
     if (cell) {
       cell.classList.add("lit");
-      setTimeout(() => cell.classList.remove("lit"), Math.min(beat * 800, 500));
+      setTimeout(() => cell.classList.remove("lit"), Math.min(bar * 300, 500));
     }
     playIndex++;
-    playTimer = setTimeout(playStep, beat * 1000);
+    playTimer = setTimeout(playStep, bar * 1000);
   }
 
   step("#bpmUp",   () => { state.bpm = Math.min(240, state.bpm + 5); $("#bpmVal").textContent = state.bpm; });
@@ -1261,21 +1284,25 @@
 
   /* --- MIDI export: click to download, or drag straight into a DAW --- */
   // Standard MIDI File (format 0, 480 ticks/quarter) of the Last Chords
-  // sequence at the current BPM, one chord per beat — same as playback.
+  // sequence at the current BPM, one chord per two-beat bar — same as playback.
   const midiBtn = $("#midiBtn");
 
   function buildMidiFile() {
     const TPQ = 480;
+    const BAR = TPQ * 2; // each chord holds for two beats
+    const stepTicks = state.arp ? Math.round(TPQ / 4) : 0; // 16th-note arp onset stagger
     const mpq = Math.round(60000000 / state.bpm);
     const events = [
       { tick: 0, data: [0xff, 0x51, 0x03, (mpq >> 16) & 255, (mpq >> 8) & 255, mpq & 255] },
     ];
     chordHistory.forEach((c, i) => {
-      const t0 = i * TPQ;
-      c.notes.forEach((n) => events.push({ tick: t0, data: [0x90, n, 96] }));
-      c.notes.forEach((n) => events.push({ tick: t0 + TPQ - 10, data: [0x80, n, 0] }));
+      const t0 = i * BAR;
+      c.notes.forEach((n, k) => {
+        events.push({ tick: t0 + k * stepTicks, data: [0x90, n, 96] });
+        events.push({ tick: t0 + BAR - 10, data: [0x80, n, 0] });
+      });
     });
-    events.push({ tick: chordHistory.length * TPQ, data: [0xff, 0x2f, 0x00] });
+    events.push({ tick: chordHistory.length * BAR, data: [0xff, 0x2f, 0x00] });
     events.sort((a, b) => a.tick - b.tick);
 
     const track = [];
@@ -1415,7 +1442,7 @@
     e.preventDefault();
     ensureAudio();
     const t = ctx.currentTime;
-    const voices = chord.notes.map((n, i) => playNote(n, t + i * 0.012, 0.85 - i * 0.04));
+    const voices = chord.notes.map((n, i) => playNote(n, t + noteStagger(i), 0.85 - i * 0.04));
     replayPointers.set(e.pointerId, { voices, cell });
     cell.classList.add("lit");
   }
@@ -1583,6 +1610,18 @@
   bassBtn.addEventListener("pointerdown", () => {
     state.bass = !state.bass;
     bassBtn.classList.toggle("active", state.bass);
+    settingChanged();
+  });
+  const octLockBtn = $("#octLockBtn");
+  octLockBtn.addEventListener("pointerdown", () => {
+    state.octLock = !state.octLock;
+    octLockBtn.classList.toggle("active", state.octLock);
+    settingChanged();
+  });
+  const arpBtn = $("#arpBtn");
+  arpBtn.addEventListener("pointerdown", () => {
+    state.arp = !state.arp;
+    arpBtn.classList.toggle("active", state.arp);
     settingChanged();
   });
 
