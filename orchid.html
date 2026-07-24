@@ -33,7 +33,12 @@
 
   html, body {
     margin: 0;
+    width: 100%; /* gives the flex column a definite cross-size, so children's
+                    percentage widths (e.g. .orchid's) actually clamp to the
+                    viewport instead of silently falling back to shrink-to-fit */
     min-height: 100%;
+    overflow-x: hidden; /* safety net: clip rather than letting any future
+                            unbreakable content push the page sideways */
     background:
       radial-gradient(1200px 800px at 50% 10%, #ddd6c8, var(--page-bg));
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -63,6 +68,7 @@
   /* ---------- Device body ---------- */
   .orchid {
     width: min(920px, 100%);
+    max-width: 100%; /* redundant safety net alongside the min() clamp above */
     background: linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
     border-radius: 28px;
     padding: 26px 28px 30px;
@@ -103,6 +109,7 @@
 
   .display {
     flex: 1 1 220px;
+    min-width: 0; /* let it shrink below its nowrap chord-name content instead of forcing the row wider */
     background: var(--display-bg);
     border-radius: 12px;
     padding: 10px 16px;
@@ -274,6 +281,63 @@
     letter-spacing: 0.05em;
   }
 
+  /* ---------- Live MIDI Out ---------- */
+  .midiout-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #midiOutBtn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
+    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #midiOutBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; }
+  #midiOutBtn.active {
+    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    color: #fff;
+    box-shadow: 0 2px 0 var(--coral-dark), 0 3px 5px rgba(60,20,5,0.25);
+  }
+  #midiPortSelect {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #b3ab95;
+    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    color: var(--ink);
+    cursor: pointer;
+    max-width: 220px;
+  }
+  #midiPortSelect:disabled { opacity: 0.55; cursor: default; }
+  .midi-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #7d7663;
+    letter-spacing: 0.02em;
+  }
+  .midi-status .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #b3ab95;
+    flex: none;
+  }
+  .midi-status .dot.live { background: var(--coral); box-shadow: 0 0 6px rgba(244,80,44,0.6); }
+  .midi-status .dot.error { background: #b0392b; }
+  .midi-status .dot.flash { animation: midiflash 0.15s ease; }
+  @keyframes midiflash { from { transform: scale(1.8); } to { transform: scale(1); } }
+
   /* ---------- Keyboard ---------- */
   .keybed {
     position: relative;
@@ -281,7 +345,8 @@
     margin-top: 8px;
     border-radius: 14px;
     background: #c4bca7;
-    padding: 8px;
+    --keybed-pad: 8px;
+    padding: var(--keybed-pad);
     box-shadow: 0 3px 8px rgba(0,0,0,0.25) inset;
   }
   .white-keys {
@@ -318,7 +383,7 @@
   }
   .key.black {
     position: absolute;
-    top: 8px;
+    top: var(--keybed-pad); /* always matches .keybed's own padding, incl. mobile override */
     width: 7.5%;
     height: 58%;
     background: linear-gradient(180deg, #4a463e, var(--key-black) 70%, #262420);
@@ -453,15 +518,16 @@
   }
   .history .hinv {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* side-by-side, not stacked — keeps the cell's height
+                             pinned to the chord text instead of doubling it */
     gap: 3px;
   }
   .history .hinv button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
     background: rgba(255,177,74,0.10);
     border: none;
     border-radius: 6px;
@@ -479,6 +545,8 @@
     color: var(--display-amber);
     text-shadow: 0 0 10px rgba(255,177,74,0.4);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.15;
   }
   .history .hnotes {
@@ -487,6 +555,8 @@
     letter-spacing: 0.1em;
     margin-top: 2px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .history .hcell.empty {
     color: #4a4436;
@@ -547,8 +617,8 @@
   @media (max-width: 640px) {
     html, body { padding: 10px 6px 24px; }
     h1, .subtitle, .brand { display: none; }
-    .orchid { padding: 14px 12px 16px; border-radius: 20px; }
-    .top-row { gap: 8px; margin-bottom: 8px; }
+    .orchid { padding: 12px 12px 12px; border-radius: 20px; }
+    .top-row { gap: 8px; margin-bottom: 6px; }
     .display { padding: 6px 12px; }
     .display .chord-name { font-size: 21px; }
     .display .chord-notes { font-size: 10px; margin-top: 2px; }
@@ -557,29 +627,30 @@
     .ctl label { font-size: 8px; }
     .stepper { gap: 4px; }
     .stepper .value { min-width: 38px; font-size: 11px; }
-    .section-label { margin: 8px 2px 4px; }
+    .section-label { margin: 5px 2px 2px; }
     .btn-row { gap: 6px; }
-    .obtn { padding: 8px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
-    /* Chord types as a tidy 4x2 grid; sound & mode in one row of six */
-    #typeRow .obtn { flex: 1 1 calc(25% - 6px); }
-    #engineRow .obtn { flex: 1 1 calc(16.6% - 6px); }
+    .obtn { padding: 7px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
+    /* Quality, extensions, and sound & mode each as a tidy 4-wide row/grid */
+    #qualityRow .obtn, #extRow .obtn { flex: 1 1 calc(25% - 6px); }
+    #engineRow .obtn { flex: 1 1 calc(25% - 6px); }
     .obtn .kbd-hint, .key .hint { display: none; }
     .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
-    .keybed { height: 116px; padding: 6px; border-radius: 10px; }
+    .keybed { height: 102px; margin-top: 5px; --keybed-pad: 6px; padding: var(--keybed-pad); border-radius: 10px; }
     .key.white { border-radius: 0 0 7px 7px; }
     .key.white .keyname { font-size: 9px; bottom: 5px; }
     .key.black .keyname { display: none; }
-    .strum-wrap { margin-top: 10px; }
+    .strum-wrap { margin-top: 7px; }
     .strum { height: 38px; padding: 5px; }
     .strum .seg { font-size: 8px; padding-bottom: 3px; }
     .history { gap: 6px; padding: 6px 10px; }
     .history .hname, .history .hcell.empty { font-size: 13px; }
     .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
-    .history .hcell { gap: 4px; }
-    .history .hinv { gap: 3px; }
-    .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
-    .history-ctl { margin: 4px 2px 2px; }
+    .history .hcell { gap: 3px; }
+    .history .hinv { gap: 2px; }
+    .history .hinv button { width: 17px; height: 18px; font-size: 10px; }
+    .history-ctl { margin: 3px 2px 1px; }
     #midiBtn { display: none; } /* drag-out export is a desktop affair */
+    #midiSection { display: none; } /* LoopBe/loopMIDI + a DAW is a desktop workflow */
     .footer { margin-top: 14px; }
   }
 </style>
@@ -598,7 +669,7 @@
 
     <div class="display">
       <div class="chord-name" id="dispChord">—</div>
-      <div class="chord-notes" id="dispNotes">hold a chord type &middot; tap a key</div>
+      <div class="chord-notes" id="dispNotes">hold a chord quality &middot; tap a key</div>
     </div>
 
     <div class="controls">
@@ -633,16 +704,20 @@
     </div>
   </div>
 
-  <div class="section-label">Chord Type — hold one, then tap a key (no type = single note)</div>
-  <div class="btn-row" id="typeRow">
-    <button class="obtn" data-type="maj">MAJ<span class="kbd-hint">1</span></button>
-    <button class="obtn" data-type="min">MIN<span class="kbd-hint">2</span></button>
-    <button class="obtn" data-type="dim">DIM<span class="kbd-hint">3</span></button>
-    <button class="obtn" data-type="sus4">SUS4<span class="kbd-hint">4</span></button>
-    <button class="obtn" data-type="maj7">MAJ7<span class="kbd-hint">5</span></button>
-    <button class="obtn" data-type="min7">MIN7<span class="kbd-hint">6</span></button>
-    <button class="obtn" data-type="dom7">7<span class="kbd-hint">7</span></button>
-    <button class="obtn" data-type="six">6<span class="kbd-hint">8</span></button>
+  <div class="section-label">Chord Quality — hold one, then tap a key (nothing held = single note)</div>
+  <div class="btn-row" id="qualityRow">
+    <button class="obtn" data-quality="maj">MAJOR<span class="kbd-hint">1</span></button>
+    <button class="obtn" data-quality="min">MINOR<span class="kbd-hint">2</span></button>
+    <button class="obtn" data-quality="sus">SUS<span class="kbd-hint">3</span></button>
+    <button class="obtn" data-quality="dim">DIM<span class="kbd-hint">4</span></button>
+  </div>
+
+  <div class="section-label">Extensions — click to combine with the held quality</div>
+  <div class="btn-row" id="extRow">
+    <button class="obtn" data-ext="6">6<span class="kbd-hint">5</span></button>
+    <button class="obtn" data-ext="m7">m7<span class="kbd-hint">6</span></button>
+    <button class="obtn" data-ext="M7">M7<span class="kbd-hint">7</span></button>
+    <button class="obtn" data-ext="9">9<span class="kbd-hint">8</span></button>
   </div>
 
   <div class="section-label">Sound &amp; Mode</div>
@@ -653,6 +728,19 @@
     <button class="obtn gray" data-engine="pluck">PLUCK</button>
     <button class="obtn" id="holdBtn" title="Latch the chord so you can strum it">HOLD</button>
     <button class="obtn" id="bassBtn" title="Add a low root note">BASS</button>
+    <button class="obtn" id="octLockBtn" title="Keep every chord note within one octave of the root">1 OCT</button>
+    <button class="obtn" id="arpBtn" title="Play chord notes as a quick arpeggio instead of together">ARP</button>
+  </div>
+
+  <div class="midi-section" id="midiSection">
+    <div class="section-label">MIDI Out — stream live notes to a DAW (e.g. via LoopBe / loopMIDI)</div>
+    <div class="midiout-row">
+      <button id="midiOutBtn" title="Connect a system MIDI output port">MIDI OUT</button>
+      <select id="midiPortSelect" title="Choose the MIDI output port" disabled>
+        <option>—</option>
+      </select>
+      <span class="midi-status" id="midiStatus"><span class="dot" id="midiDot"></span><span id="midiStatusText">Off</span></span>
+    </div>
   </div>
 
   <div class="section-label">Keys</div>
@@ -686,10 +774,12 @@
 </div>
 
 <div class="footer">
-  Hold a chord-type key, then tap a note key — with nothing held, keys play single notes.
-  Computer keyboard: hold <b>1–8</b> for chord types; white keys
+  Hold a chord-quality key, then tap a note key — with nothing held, keys play single notes.
+  Extensions (6, m7, M7, 9) click to toggle and combine with whichever quality you hold; 6/m7/M7
+  share one slot, so picking one clears the others, while 9 adds independently.
+  Computer keyboard: hold <b>1–4</b> for quality, tap <b>5–8</b> to toggle extensions; white keys
   <b>Z&nbsp;X&nbsp;C&nbsp;V&nbsp;B&nbsp;N&nbsp;M</b>, black keys <b>S&nbsp;D&nbsp;G&nbsp;H&nbsp;J</b>.
-  With a mouse, click a chord type to latch it.<br>
+  With a mouse, click a quality to latch it.<br>
   This is an unofficial fan-made web tribute to the
   <a href="https://telepathicinstruments.com" target="_blank" rel="noopener">Orchid by Telepathic Instruments</a>
   and is not affiliated with or endorsed by them.
@@ -705,17 +795,45 @@
 
   /* ============================= State ============================= */
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  // The 8 chord-type keys, as on the hardware: held while tapping a note key.
-  const CHORD_TYPES = {
-    maj:  { name: "",     intervals: [0, 4, 7] },
-    min:  { name: "m",    intervals: [0, 3, 7] },
-    dim:  { name: "dim",  intervals: [0, 3, 6] },
-    sus4: { name: "sus4", intervals: [0, 5, 7] },
-    maj7: { name: "maj7", intervals: [0, 4, 7, 11] },
-    min7: { name: "m7",   intervals: [0, 3, 7, 10] },
-    dom7: { name: "7",    intervals: [0, 4, 7, 10] },
-    six:  { name: "6",    intervals: [0, 4, 7, 9] },
+  // Orchid hardware-compatible harmony model: a chord QUALITY is held while
+  // tapping a note key (same gesture as before); EXTENSIONS are standing
+  // toggles that modify whichever quality is currently held. At most one of
+  // 6 / m7 / M7 is engaged at a time — they share one "seventh slot" on the
+  // hardware — while 9 is an independent add-on, so "multiple extensions
+  // active at once" always means at most a slot extension plus 9.
+  const QUALITY_BASE = {
+    maj: { triad: [0, 4, 7] },
+    min: { triad: [0, 3, 7] },
+    sus: { triad: [0, 5, 7] },
+    dim: { triad: [0, 3, 6] },
   };
+  const SLOT_ADD = { "": [], "6": [9], m7: [10], M7: [11] };
+  const NINE_ADD = 14;
+  // Suffix names taken verbatim from the product brief where it documents a
+  // combination. A few combinations the brief leaves undocumented (minor/
+  // sus/dim + 6 + 9, and sus/dim + M7 + 9) extend the brief's own pattern
+  // for the cases it does name in the same family (6+9 -> ".../9"; M7+9 ->
+  // trailing "7" becomes "9"), so undocumented input still degrades to a
+  // predictable, musically sensible chord rather than an error.
+  const CHORD_NAMES = {
+    maj: { "": "",    "6": "6",    m7: "7",    M7: "maj7",
+           "+9": "add9", "6+9": "6/9",   "m7+9": "9",    "M7+9": "maj9" },
+    min: { "": "m",   "6": "m6",   m7: "m7",   M7: "mmaj7",
+           "+9": "madd9", "6+9": "m6/9",  "m7+9": "m9",   "M7+9": "mmaj9" },
+    sus: { "": "sus4", "6": "sus6", m7: "sus7", M7: "susmaj7",
+           "+9": "sus4add9", "6+9": "sus6/9", "m7+9": "9sus4", "M7+9": "susmaj9" },
+    dim: { "": "dim",  "6": "dim6", m7: "m7b5", M7: "dimmaj7",
+           "+9": "dimadd9", "6+9": "dim6/9", "m7+9": "m7b5add9", "M7+9": "dimmaj9" },
+  };
+  function chordSuffix(quality, slot, nineOn) {
+    const key = nineOn ? (slot ? slot + "+9" : "+9") : slot;
+    return CHORD_NAMES[quality][key];
+  }
+  function chordIntervals(quality, slot, nineOn) {
+    const add = SLOT_ADD[slot].concat(nineOn ? [NINE_ADD] : []);
+    return QUALITY_BASE[quality].triad.concat(add);
+  }
+
   const VOICING_NAMES = ["CLOSE", "INV 1", "INV 2", "DROP 2", "OCT UP", "LOW RT", "WIDE"];
 
   const state = {
@@ -724,6 +842,10 @@
     octave: 0,       // -2 .. +2
     hold: false,
     bass: false,
+    octLock: false,
+    arp: false,
+    extSlot: "",     // "" | "6" | "m7" | "M7" — at most one at a time
+    ext9: false,     // independent add-on
     bpm: 80,
     volume: 0.8,
     reverb: 0.35,
@@ -780,6 +902,40 @@
   }
 
   const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+
+  /* --- Live MIDI Out: mirror played notes to a system MIDI port, e.g. a
+     LoopBe/loopMIDI virtual cable feeding a DAW track in real time --- */
+  let midiAccess = null, midiOutput = null, midiOutOn = false;
+
+  function scheduleMidi(fn, delayMs) {
+    if (delayMs < 2) fn(); else setTimeout(fn, delayMs);
+  }
+  function sendMidiNoteOn(port, note, vel, time) {
+    const velocity = Math.max(1, Math.min(127, Math.round(vel * 127)));
+    const delay = ctx ? Math.max(0, (time - ctx.currentTime) * 1000) : 0;
+    scheduleMidi(() => {
+      try { port.send([0x90, note, velocity]); flashMidiDot(); } catch {}
+    }, delay);
+  }
+  function sendMidiNoteOff(port, note, time) {
+    const delay = ctx ? Math.max(0, (time - ctx.currentTime) * 1000) : 0;
+    scheduleMidi(() => {
+      try { port.send([0x80, note, 0]); } catch {}
+    }, delay);
+  }
+  // Belt-and-suspenders panic: All Notes Off + All Sound Off, so switching
+  // or disabling the output never leaves a stuck note ringing in the DAW.
+  function panicMidi(port) {
+    if (!port) return;
+    try { port.send([0xb0, 123, 0]); port.send([0xb0, 120, 0]); } catch {}
+  }
+  function flashMidiDot() {
+    const dot = document.getElementById("midiDot");
+    if (!dot) return;
+    dot.classList.remove("flash");
+    void dot.offsetWidth;
+    dot.classList.add("flash");
+  }
 
   /* --- Sound engines: each returns {stop(time)} and self-connects to master --- */
   const ENGINES = {
@@ -917,26 +1073,34 @@
   };
 
   function playNote(midi, time, vel) {
-    return ENGINES[state.engine](midiToFreq(midi), time, vel);
+    const voice = ENGINES[state.engine](midiToFreq(midi), time, vel);
+    if (midiOutOn && midiOutput) {
+      const port = midiOutput; // captured now, so note-off always targets the port that got the note-on
+      sendMidiNoteOn(port, midi, vel, time);
+      const origStop = voice.stop;
+      voice.stop = (t) => { origStop(t); sendMidiNoteOff(port, midi, t); };
+    }
+    return voice;
   }
 
   /* ========================= Chord building ========================= */
-  // Held chord-type keys, most recent last. `latchType` is the mouse fallback:
-  // a mouse can't hold a button and tap a key at once, so clicking latches.
-  const heldTypes = [];
-  let latchType = null;
-  const currentType = () => heldTypes.length ? heldTypes[heldTypes.length - 1] : latchType;
+  // Held chord-quality keys, most recent last. `latchQuality` is the mouse
+  // fallback: a mouse can't hold a button and tap a key at once, so clicking latches.
+  const heldQualities = [];
+  let latchQuality = null;
+  const currentQuality = () => heldQualities.length ? heldQualities[heldQualities.length - 1] : latchQuality;
 
   function buildChord(rootIndex) {
-    const typeId = currentType();
+    const quality = currentQuality();
     const rootMidi = 48 + state.octave * 12 + rootIndex; // C3-based
     let notes, name;
-    if (typeId) {
-      const t = CHORD_TYPES[typeId];
-      notes = applyVoicing(t.intervals.map((i) => rootMidi + i));
-      name = NOTE_NAMES[rootIndex] + t.name;
+    if (quality) {
+      const suffix = chordSuffix(quality, state.extSlot, state.ext9);
+      notes = applyVoicing(chordIntervals(quality, state.extSlot, state.ext9).map((i) => rootMidi + i));
+      if (state.octLock) notes = foldToOneOctave(notes, rootMidi);
+      name = NOTE_NAMES[rootIndex] + suffix;
     } else {
-      notes = [rootMidi]; // no chord key held: plain single note
+      notes = [rootMidi]; // no quality key held: plain single note
       name = NOTE_NAMES[rootIndex];
     }
     if (state.bass) {
@@ -969,6 +1133,23 @@
     return out;
   }
 
+  // 1 OCT mode: shift every note by whole octaves until it falls in the same
+  // labeled octave (the same C-to-B span) as the root. A triad can be under
+  // 12 semitones wide and still cross that boundary — e.g. root-position Am
+  // is A3-C4-E4, just 7 semitones apart — so this checks octave *labels*,
+  // not the raw semitone distance from the root.
+  function foldToOneOctave(notes, anchor) {
+    const targetOct = Math.floor(anchor / 12);
+    const folded = notes.map((n) => n + (targetOct - Math.floor(n / 12)) * 12);
+    return [...new Set(folded)]; // voicings like WIDE/OCT UP can fold onto the same pitch twice
+  }
+
+  // Per-note onset delay when triggering a chord's notes together: a tiny
+  // humanizing roll normally, or a musical 16th-note arpeggio when ARP is on.
+  function noteStagger(i) {
+    return state.arp ? i * (60 / state.bpm / 4) : i * 0.012;
+  }
+
   /* ========================= Playback state ========================= */
   const heldChords = new Map(); // rootIndex -> {voices:[], notes:[]}
   let latched = null;           // {rootIndex, voices, notes} when HOLD is on
@@ -983,7 +1164,7 @@
     const chord = buildChord(rootIndex);
     const t = ctx.currentTime;
     const voices = chord.notes.map((n, i) =>
-      playNote(n, t + i * 0.012, 0.9 - i * 0.04) // tiny humanizing roll
+      playNote(n, t + noteStagger(i), 0.9 - i * 0.04)
     );
     heldChords.set(rootIndex, { voices, notes: chord.notes });
     lastChord = chord;
@@ -1022,8 +1203,8 @@
     });
     heldChords.clear();
     releaseLatched();
-    heldTypes.length = 0;
-    syncTypeButtons();
+    heldQualities.length = 0;
+    syncQualityButtons();
   }
 
   /* ============================== UI ================================ */
@@ -1104,7 +1285,10 @@
     renderHistory();
     ensureAudio();
     const t = ctx.currentTime;
-    c.notes.forEach((n, i) => playNote(n, t + i * 0.01, 0.7).stop(t + 0.5));
+    c.notes.forEach((n, i) => {
+      const delay = noteStagger(i);
+      playNote(n, t + delay, 0.7).stop(t + delay + 0.5);
+    });
   }
 
   /* --- Sequence playback --- */
@@ -1132,18 +1316,19 @@
     if (!chordHistory.length) { setPlaying(false); return; }
     const i = playIndex % chordHistory.length;
     const c = chordHistory[i];
-    const beat = 60 / state.bpm;
+    const bar = (60 / state.bpm) * 2; // each chord holds for two beats
     const t = ctx.currentTime;
-    c.notes.forEach((n, k) =>
-      playNote(n, t + k * 0.01, 0.85 - k * 0.04).stop(t + Math.max(0.15, beat * 0.9))
-    );
+    c.notes.forEach((n, k) => {
+      const delay = noteStagger(k);
+      playNote(n, t + delay, 0.85 - k * 0.04).stop(t + delay + Math.max(0.3, bar * 0.9));
+    });
     const cell = historyEl.children[i];
     if (cell) {
       cell.classList.add("lit");
-      setTimeout(() => cell.classList.remove("lit"), Math.min(beat * 800, 500));
+      setTimeout(() => cell.classList.remove("lit"), Math.min(bar * 300, 500));
     }
     playIndex++;
-    playTimer = setTimeout(playStep, beat * 1000);
+    playTimer = setTimeout(playStep, bar * 1000);
   }
 
   step("#bpmUp",   () => { state.bpm = Math.min(240, state.bpm + 5); $("#bpmVal").textContent = state.bpm; });
@@ -1151,21 +1336,25 @@
 
   /* --- MIDI export: click to download, or drag straight into a DAW --- */
   // Standard MIDI File (format 0, 480 ticks/quarter) of the Last Chords
-  // sequence at the current BPM, one chord per beat — same as playback.
+  // sequence at the current BPM, one chord per two-beat bar — same as playback.
   const midiBtn = $("#midiBtn");
 
   function buildMidiFile() {
     const TPQ = 480;
+    const BAR = TPQ * 2; // each chord holds for two beats
+    const stepTicks = state.arp ? Math.round(TPQ / 4) : 0; // 16th-note arp onset stagger
     const mpq = Math.round(60000000 / state.bpm);
     const events = [
       { tick: 0, data: [0xff, 0x51, 0x03, (mpq >> 16) & 255, (mpq >> 8) & 255, mpq & 255] },
     ];
     chordHistory.forEach((c, i) => {
-      const t0 = i * TPQ;
-      c.notes.forEach((n) => events.push({ tick: t0, data: [0x90, n, 96] }));
-      c.notes.forEach((n) => events.push({ tick: t0 + TPQ - 10, data: [0x80, n, 0] }));
+      const t0 = i * BAR;
+      c.notes.forEach((n, k) => {
+        events.push({ tick: t0 + k * stepTicks, data: [0x90, n, 96] });
+        events.push({ tick: t0 + BAR - 10, data: [0x80, n, 0] });
+      });
     });
-    events.push({ tick: chordHistory.length * TPQ, data: [0xff, 0x2f, 0x00] });
+    events.push({ tick: chordHistory.length * BAR, data: [0xff, 0x2f, 0x00] });
     events.sort((a, b) => a.tick - b.tick);
 
     const track = [];
@@ -1207,6 +1396,96 @@
     e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${midiDataUrl()}`);
   });
 
+  /* --- Live MIDI Out UI: pick a port, connect, stay panic-safe --- */
+  const midiOutBtn = $("#midiOutBtn");
+  const midiPortSelect = $("#midiPortSelect");
+  const midiDot = $("#midiDot");
+  const midiStatusText = $("#midiStatusText");
+
+  function setMidiStatus(text, mode) {
+    midiStatusText.textContent = text;
+    midiDot.classList.remove("live", "error");
+    if (mode) midiDot.classList.add(mode);
+  }
+
+  function populateMidiPorts() {
+    midiPortSelect.innerHTML = "";
+    const ports = midiAccess ? [...midiAccess.outputs.values()] : [];
+    if (!ports.length) {
+      const opt = document.createElement("option");
+      opt.textContent = "No MIDI outputs found";
+      midiPortSelect.appendChild(opt);
+      midiPortSelect.disabled = true;
+      midiOutput = null;
+      setMidiStatus("No ports — start LoopBe/loopMIDI, then click MIDI OUT again", "error");
+      return;
+    }
+    midiPortSelect.disabled = false;
+    ports.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name || p.id;
+      midiPortSelect.appendChild(opt);
+    });
+    // Keep the current port if it's still there; only fall back on first
+    // pick or if it disconnected, so a device hotplug doesn't jump ports.
+    const keepCurrent = midiOutput && ports.find((p) => p.id === midiOutput.id);
+    const saved = localStorage.getItem("orchid-midi-port-name");
+    const pick = keepCurrent
+      || ports.find((p) => p.name === saved)
+      || ports.find((p) => /loopbe|loopmidi/i.test(p.name || ""))
+      || ports[0];
+    midiPortSelect.value = pick.id;
+    selectMidiOutput(pick);
+  }
+
+  function selectMidiOutput(port) {
+    midiOutput = port || null;
+    if (port) {
+      localStorage.setItem("orchid-midi-port-name", port.name || "");
+      setMidiStatus("→ " + (port.name || "MIDI output"), "live");
+    }
+  }
+
+  midiPortSelect.addEventListener("change", () => {
+    const prev = midiOutput;
+    const next = midiAccess ? midiAccess.outputs.get(midiPortSelect.value) : null;
+    if (prev && prev !== next) panicMidi(prev);
+    selectMidiOutput(next || null);
+  });
+
+  midiOutBtn.addEventListener("click", async () => {
+    if (midiOutOn) {
+      midiOutOn = false;
+      midiOutBtn.classList.remove("active");
+      panicMidi(midiOutput);
+      setMidiStatus("Off", null);
+      return;
+    }
+    if (!navigator.requestMIDIAccess) {
+      setMidiStatus("Not supported — try Chrome or Edge on desktop", "error");
+      return;
+    }
+    setMidiStatus("Requesting MIDI access…", null);
+    try {
+      midiAccess = await navigator.requestMIDIAccess();
+    } catch {
+      setMidiStatus("MIDI access denied", "error");
+      return;
+    }
+    midiAccess.onstatechange = () => populateMidiPorts();
+    populateMidiPorts();
+    midiOutOn = true;
+    midiOutBtn.classList.add("active");
+  });
+
+  if (!navigator.requestMIDIAccess) {
+    setMidiStatus("Not supported — try Chrome or Edge on desktop", "error");
+  }
+
+  // Best-effort safety net if the tab closes while MIDI is connected.
+  window.addEventListener("pagehide", () => panicMidi(midiOutput));
+
   // Replaying a stored chord plays its exact saved voicing; it does not
   // touch the display, the strum plate, or the history sequence itself.
   const replayPointers = new Map(); // pointerId -> {voices, cell}
@@ -1215,7 +1494,7 @@
     e.preventDefault();
     ensureAudio();
     const t = ctx.currentTime;
-    const voices = chord.notes.map((n, i) => playNote(n, t + i * 0.012, 0.85 - i * 0.04));
+    const voices = chord.notes.map((n, i) => playNote(n, t + noteStagger(i), 0.85 - i * 0.04));
     replayPointers.set(e.pointerId, { voices, cell });
     cell.classList.add("lit");
   }
@@ -1311,50 +1590,73 @@
   }
   wireRow("#engineRow", "engine", (v) => { state.engine = v; });
 
-  /* --- Chord-type keys: momentary hold (touch/keyboard), latch for mouse --- */
-  const typeRow = $("#typeRow");
-  const typePointers = new Map(); // pointerId -> type id
+  /* --- Chord-quality keys: momentary hold (touch/keyboard), latch for mouse --- */
+  const qualityRow = $("#qualityRow");
+  const qualityPointers = new Map(); // pointerId -> quality id
 
-  function syncTypeButtons() {
-    const cur = currentType();
-    typeRow.querySelectorAll("button").forEach((b) => {
-      b.classList.toggle("active", b.dataset.type === cur);
-      b.classList.toggle("pressed", heldTypes.includes(b.dataset.type));
+  function syncQualityButtons() {
+    const cur = currentQuality();
+    qualityRow.querySelectorAll("button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.quality === cur);
+      b.classList.toggle("pressed", heldQualities.includes(b.dataset.quality));
     });
   }
-  function typeDown(id) {
-    if (!heldTypes.includes(id)) heldTypes.push(id);
-    latchType = null;
-    syncTypeButtons();
+  function qualityDown(id) {
+    if (!heldQualities.includes(id)) heldQualities.push(id);
+    latchQuality = null;
+    syncQualityButtons();
   }
-  function typeUp(id) {
-    const i = heldTypes.indexOf(id);
-    if (i >= 0) heldTypes.splice(i, 1);
-    syncTypeButtons();
+  function qualityUp(id) {
+    const i = heldQualities.indexOf(id);
+    if (i >= 0) heldQualities.splice(i, 1);
+    syncQualityButtons();
   }
 
-  typeRow.querySelectorAll("button").forEach((btn) => {
+  qualityRow.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      const id = btn.dataset.type;
+      const id = btn.dataset.quality;
       if (e.pointerType === "mouse") {
-        latchType = latchType === id ? null : id; // click to latch, click again to clear
-        syncTypeButtons();
+        latchQuality = latchQuality === id ? null : id; // click to latch, click again to clear
+        syncQualityButtons();
       } else {
-        typePointers.set(e.pointerId, id);
-        typeDown(id);
+        qualityPointers.set(e.pointerId, id);
+        qualityDown(id);
       }
     });
   });
   ["pointerup", "pointercancel"].forEach((ev) =>
     window.addEventListener(ev, (e) => {
-      const id = typePointers.get(e.pointerId);
+      const id = qualityPointers.get(e.pointerId);
       if (id !== undefined) {
-        typePointers.delete(e.pointerId);
-        typeUp(id);
+        qualityPointers.delete(e.pointerId);
+        qualityUp(id);
       }
     })
   );
+
+  /* --- Extension buttons: simple toggles that modify the held quality.
+     6/m7/M7 share one slot (picking one clears the others); 9 is independent. --- */
+  const extRow = $("#extRow");
+
+  function syncExtButtons() {
+    extRow.querySelectorAll("button").forEach((b) => {
+      const k = b.dataset.ext;
+      b.classList.toggle("active", k === "9" ? state.ext9 : state.extSlot === k);
+    });
+  }
+  function toggleExt(key) {
+    if (key === "9") state.ext9 = !state.ext9;
+    else state.extSlot = state.extSlot === key ? "" : key;
+    syncExtButtons();
+    settingChanged(); // retrigger any held chord so the change is audible live
+  }
+  extRow.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      toggleExt(btn.dataset.ext);
+    });
+  });
 
   function settingChanged() {
     // Retrigger held chords with the new setting so changes are audible live.
@@ -1383,6 +1685,18 @@
   bassBtn.addEventListener("pointerdown", () => {
     state.bass = !state.bass;
     bassBtn.classList.toggle("active", state.bass);
+    settingChanged();
+  });
+  const octLockBtn = $("#octLockBtn");
+  octLockBtn.addEventListener("pointerdown", () => {
+    state.octLock = !state.octLock;
+    octLockBtn.classList.toggle("active", state.octLock);
+    settingChanged();
+  });
+  const arpBtn = $("#arpBtn");
+  arpBtn.addEventListener("pointerdown", () => {
+    state.arp = !state.arp;
+    arpBtn.classList.toggle("active", state.arp);
     settingChanged();
   });
 
@@ -1488,18 +1802,20 @@
 
   /* --- Computer keyboard --- */
   const KEYMAP = { z:0, s:1, x:2, d:3, c:4, v:5, g:6, b:7, h:8, n:9, j:10, m:11 };
-  const TYPEKEYS = { 1:"maj", 2:"min", 3:"dim", 4:"sus4", 5:"maj7", 6:"min7", 7:"dom7", 8:"six" };
+  const QUALITYKEYS = { 1: "maj", 2: "min", 3: "sus", 4: "dim" };
+  const EXTKEYS = { 5: "6", 6: "m7", 7: "M7", 8: "9" };
 
   window.addEventListener("keydown", (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k in KEYMAP) { ensureAudio(); chordOn(KEYMAP[k]); e.preventDefault(); }
-    else if (k in TYPEKEYS) typeDown(TYPEKEYS[k]);
+    else if (k in QUALITYKEYS) qualityDown(QUALITYKEYS[k]);
+    else if (k in EXTKEYS) toggleExt(EXTKEYS[k]);
   });
   window.addEventListener("keyup", (e) => {
     const k = e.key.toLowerCase();
     if (k in KEYMAP) chordOff(KEYMAP[k]);
-    else if (k in TYPEKEYS) typeUp(TYPEKEYS[k]);
+    else if (k in QUALITYKEYS) qualityUp(QUALITYKEYS[k]);
   });
   window.addEventListener("blur", releaseEverything);
 
