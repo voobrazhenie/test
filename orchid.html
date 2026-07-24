@@ -33,7 +33,12 @@
 
   html, body {
     margin: 0;
+    width: 100%; /* gives the flex column a definite cross-size, so children's
+                    percentage widths (e.g. .orchid's) actually clamp to the
+                    viewport instead of silently falling back to shrink-to-fit */
     min-height: 100%;
+    overflow-x: hidden; /* safety net: clip rather than letting any future
+                            unbreakable content push the page sideways */
     background:
       radial-gradient(1200px 800px at 50% 10%, #ddd6c8, var(--page-bg));
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -63,6 +68,7 @@
   /* ---------- Device body ---------- */
   .orchid {
     width: min(920px, 100%);
+    max-width: 100%; /* redundant safety net alongside the min() clamp above */
     background: linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
     border-radius: 28px;
     padding: 26px 28px 30px;
@@ -103,6 +109,7 @@
 
   .display {
     flex: 1 1 220px;
+    min-width: 0; /* let it shrink below its nowrap chord-name content instead of forcing the row wider */
     background: var(--display-bg);
     border-radius: 12px;
     padding: 10px 16px;
@@ -338,7 +345,8 @@
     margin-top: 8px;
     border-radius: 14px;
     background: #c4bca7;
-    padding: 8px;
+    --keybed-pad: 8px;
+    padding: var(--keybed-pad);
     box-shadow: 0 3px 8px rgba(0,0,0,0.25) inset;
   }
   .white-keys {
@@ -375,7 +383,7 @@
   }
   .key.black {
     position: absolute;
-    top: 8px;
+    top: var(--keybed-pad); /* always matches .keybed's own padding, incl. mobile override */
     width: 7.5%;
     height: 58%;
     background: linear-gradient(180deg, #4a463e, var(--key-black) 70%, #262420);
@@ -510,15 +518,16 @@
   }
   .history .hinv {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* side-by-side, not stacked — keeps the cell's height
+                             pinned to the chord text instead of doubling it */
     gap: 3px;
   }
   .history .hinv button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
     background: rgba(255,177,74,0.10);
     border: none;
     border-radius: 6px;
@@ -536,6 +545,8 @@
     color: var(--display-amber);
     text-shadow: 0 0 10px rgba(255,177,74,0.4);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 1.15;
   }
   .history .hnotes {
@@ -544,6 +555,8 @@
     letter-spacing: 0.1em;
     margin-top: 2px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .history .hcell.empty {
     color: #4a4436;
@@ -604,8 +617,8 @@
   @media (max-width: 640px) {
     html, body { padding: 10px 6px 24px; }
     h1, .subtitle, .brand { display: none; }
-    .orchid { padding: 14px 12px 16px; border-radius: 20px; }
-    .top-row { gap: 8px; margin-bottom: 8px; }
+    .orchid { padding: 12px 12px 12px; border-radius: 20px; }
+    .top-row { gap: 8px; margin-bottom: 6px; }
     .display { padding: 6px 12px; }
     .display .chord-name { font-size: 21px; }
     .display .chord-notes { font-size: 10px; margin-top: 2px; }
@@ -614,7 +627,7 @@
     .ctl label { font-size: 8px; }
     .stepper { gap: 4px; }
     .stepper .value { min-width: 38px; font-size: 11px; }
-    .section-label { margin: 6px 2px 3px; }
+    .section-label { margin: 5px 2px 2px; }
     .btn-row { gap: 6px; }
     .obtn { padding: 7px 0; min-width: 0; font-size: 10.5px; border-radius: 10px; }
     /* Quality, extensions, and sound & mode each as a tidy 4-wide row/grid */
@@ -622,20 +635,20 @@
     #engineRow .obtn { flex: 1 1 calc(25% - 6px); }
     .obtn .kbd-hint, .key .hint { display: none; }
     .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
-    .keybed { height: 108px; padding: 6px; border-radius: 10px; }
+    .keybed { height: 102px; margin-top: 5px; --keybed-pad: 6px; padding: var(--keybed-pad); border-radius: 10px; }
     .key.white { border-radius: 0 0 7px 7px; }
     .key.white .keyname { font-size: 9px; bottom: 5px; }
     .key.black .keyname { display: none; }
-    .strum-wrap { margin-top: 10px; }
+    .strum-wrap { margin-top: 7px; }
     .strum { height: 38px; padding: 5px; }
     .strum .seg { font-size: 8px; padding-bottom: 3px; }
     .history { gap: 6px; padding: 6px 10px; }
     .history .hname, .history .hcell.empty { font-size: 13px; }
     .history .hnotes { font-size: 7.5px; letter-spacing: 0.04em; }
-    .history .hcell { gap: 4px; }
-    .history .hinv { gap: 3px; }
-    .history .hinv button { width: 30px; height: 23px; font-size: 13px; }
-    .history-ctl { margin: 4px 2px 2px; }
+    .history .hcell { gap: 3px; }
+    .history .hinv { gap: 2px; }
+    .history .hinv button { width: 17px; height: 18px; font-size: 10px; }
+    .history-ctl { margin: 3px 2px 1px; }
     #midiBtn { display: none; } /* drag-out export is a desktop affair */
     #midiSection { display: none; } /* LoopBe/loopMIDI + a DAW is a desktop workflow */
     .footer { margin-top: 14px; }
