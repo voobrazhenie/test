@@ -935,6 +935,21 @@
     dot.classList.add("flash");
   }
 
+  // cancelScheduledValues() can leave an AudioParam's value at a stale point
+  // (not the correctly-interpolated one) when cancelling mid-ramp, causing an
+  // audible click/jump on release. cancelAndHoldAtTime() is the fix designed
+  // for exactly this; fall back only if a browser somehow lacks it.
+  function cancelAndHold(param, t) {
+    if (param.cancelAndHoldAtTime) param.cancelAndHoldAtTime(t);
+    else param.cancelScheduledValues(t);
+  }
+
+  // Disconnect every node in a voice once it's actually done playing, so a
+  // long session doesn't accumulate silent-but-still-processed nodes.
+  function cleanupOnEnded(endpoint, nodes) {
+    endpoint.onended = () => nodes.forEach((n) => { try { n.disconnect(); } catch {} });
+  }
+
   /* --- Sound engines: each returns {stop(time)} and self-connects to master --- */
   const ENGINES = {
     epiano(freq, time, vel) {
@@ -967,9 +982,10 @@
       amp.connect(master);
 
       carrier.start(time); mod.start(time); sub.start(time);
+      cleanupOnEnded(carrier, [carrier, mod, modGain, sub, subGain, amp]);
       return {
         stop(t) {
-          amp.gain.cancelScheduledValues(t);
+          cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.09);
           carrier.stop(t + 0.6); mod.stop(t + 0.6); sub.stop(t + 0.6);
         }
@@ -998,9 +1014,10 @@
       oscs.forEach((o) => o.connect(filter));
       filter.connect(amp).connect(master);
       oscs.forEach((o) => o.start(time));
+      cleanupOnEnded(oscs[0], [...oscs, filter, amp]);
       return {
         stop(t) {
-          amp.gain.cancelScheduledValues(t);
+          cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.11);
           oscs.forEach((o) => o.stop(t + 0.8));
         }
@@ -1027,9 +1044,10 @@
       oscs.forEach((o) => o.connect(filter));
       filter.connect(amp).connect(master);
       oscs.forEach((o) => o.start(time));
+      cleanupOnEnded(oscs[0], [...oscs, filter, amp]);
       return {
         stop(t) {
-          amp.gain.cancelScheduledValues(t);
+          cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.5);
           oscs.forEach((o) => o.stop(t + 2.5));
         }
@@ -1060,9 +1078,10 @@
       o.connect(filter); o2g.connect(filter);
       filter.connect(amp).connect(master);
       o.start(time); o2.start(time);
+      cleanupOnEnded(o, [o, o2, o2g, filter, amp]);
       return {
         stop(t) {
-          amp.gain.cancelScheduledValues(t);
+          cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.05);
           o.stop(t + 0.4); o2.stop(t + 0.4);
         }
@@ -1710,20 +1729,30 @@
     })
   );
 
+  // Coalesced so that pressing/releasing several quality or extension keys
+  // within the same instant (each fires its own event) triggers one retrigger
+  // reflecting the final state, instead of a cascade of overlapping voices —
+  // each stopping the last while a new one attacks, which sums into an
+  // audibly louder transient (worst on the slow-release pad/synth engines).
+  let settingChangedTimer = null;
   function settingChanged() {
-    // Retrigger held chords with the new setting so changes are audible live.
-    if (ctx && heldChords.size) {
-      const held = [...heldChords.keys()];
-      held.forEach((idx) => {
-        const h = heldChords.get(idx);
-        h.voices.forEach((v) => v.stop(ctx.currentTime));
-        heldChords.delete(idx);
-        keyEl(idx)?.classList.remove("down");
-      });
-      held.forEach((idx) => chordOn(idx));
-    } else {
-      refreshIdleDisplay();
-    }
+    if (settingChangedTimer) return;
+    settingChangedTimer = setTimeout(() => {
+      settingChangedTimer = null;
+      // Retrigger held chords with the new setting so changes are audible live.
+      if (ctx && heldChords.size) {
+        const held = [...heldChords.keys()];
+        held.forEach((idx) => {
+          const h = heldChords.get(idx);
+          h.voices.forEach((v) => v.stop(ctx.currentTime));
+          heldChords.delete(idx);
+          keyEl(idx)?.classList.remove("down");
+        });
+        held.forEach((idx) => chordOn(idx));
+      } else {
+        refreshIdleDisplay();
+      }
+    }, 0);
   }
 
   /* --- Hold & bass toggles --- */
