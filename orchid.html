@@ -712,7 +712,7 @@
     <button class="obtn" data-quality="dim">DIM<span class="kbd-hint">4</span></button>
   </div>
 
-  <div class="section-label">Extensions — click to combine with the held quality</div>
+  <div class="section-label">Extensions — hold one (or more) with the quality, same as above</div>
   <div class="btn-row" id="extRow">
     <button class="obtn" data-ext="6">6<span class="kbd-hint">5</span></button>
     <button class="obtn" data-ext="m7">m7<span class="kbd-hint">6</span></button>
@@ -775,11 +775,11 @@
 
 <div class="footer">
   Hold a chord-quality key, then tap a note key — with nothing held, keys play single notes.
-  Extensions (6, m7, M7, 9) click to toggle and combine with whichever quality you hold; 6/m7/M7
-  share one slot, so picking one clears the others, while 9 adds independently.
-  Computer keyboard: hold <b>1–4</b> for quality, tap <b>5–8</b> to toggle extensions; white keys
+  Extensions (6, m7, M7, 9) hold the same way to combine with whichever quality you're playing;
+  6/m7/M7 share one slot, so holding one releases the others, while 9 adds independently.
+  Computer keyboard: hold <b>1–4</b> for quality, hold <b>5–8</b> for extensions; white keys
   <b>A&nbsp;S&nbsp;D&nbsp;F&nbsp;G&nbsp;H&nbsp;J</b>, black keys <b>W&nbsp;E&nbsp;T&nbsp;Y&nbsp;U</b>.
-  With a mouse, click a quality to latch it.<br>
+  With a mouse, click a quality or extension to latch it.<br>
   This is an unofficial fan-made web tribute to the
   <a href="https://telepathicinstruments.com" target="_blank" rel="noopener">Orchid by Telepathic Instruments</a>
   and is not affiliated with or endorsed by them.
@@ -844,8 +844,6 @@
     bass: false,
     octLock: false,
     arp: false,
-    extSlot: "",     // "" | "6" | "m7" | "M7" — at most one at a time
-    ext9: false,     // independent add-on
     bpm: 80,
     volume: 0.8,
     reverb: 0.35,
@@ -1090,13 +1088,24 @@
   let latchQuality = null;
   const currentQuality = () => heldQualities.length ? heldQualities[heldQualities.length - 1] : latchQuality;
 
+  // Extension buttons use the exact same hold model as quality. 6/m7/M7
+  // share one slot (held keys array, most recent wins, mouse latches);
+  // 9 is independent, tracked as a set of concurrent holders (keyboard and
+  // each touch get their own id) so it also works as a true press-and-hold.
+  const heldSlotKeys = [];
+  let latchSlotKey = null;
+  const currentSlot = () => heldSlotKeys.length ? heldSlotKeys[heldSlotKeys.length - 1] : (latchSlotKey || "");
+  const heldNine = new Set();
+  let latchNine = false;
+  const isNineOn = () => heldNine.size > 0 || latchNine;
+
   function buildChord(rootIndex) {
     const quality = currentQuality();
     const rootMidi = 48 + state.octave * 12 + rootIndex; // C3-based
     let notes, name;
     if (quality) {
-      const suffix = chordSuffix(quality, state.extSlot, state.ext9);
-      notes = applyVoicing(chordIntervals(quality, state.extSlot, state.ext9).map((i) => rootMidi + i));
+      const suffix = chordSuffix(quality, currentSlot(), isNineOn());
+      notes = applyVoicing(chordIntervals(quality, currentSlot(), isNineOn()).map((i) => rootMidi + i));
       if (state.octLock) notes = foldToOneOctave(notes, rootMidi);
       name = NOTE_NAMES[rootIndex] + suffix;
     } else {
@@ -1205,6 +1214,9 @@
     releaseLatched();
     heldQualities.length = 0;
     syncQualityButtons();
+    heldSlotKeys.length = 0;
+    heldNine.clear();
+    syncExtButtons();
   }
 
   /* ============================== UI ================================ */
@@ -1635,28 +1647,68 @@
     })
   );
 
-  /* --- Extension buttons: simple toggles that modify the held quality.
-     6/m7/M7 share one slot (picking one clears the others); 9 is independent. --- */
+  /* --- Extension buttons: momentary hold, same mechanics as chord quality.
+     6/m7/M7 share one slot (holding one clears the others); 9 is independent.
+     Touch/keyboard hold for real; a mouse can't hold a button and tap a note
+     key at once, so clicking latches, exactly like the quality row. --- */
   const extRow = $("#extRow");
+  const extPointers = new Map(); // pointerId -> ext key
 
   function syncExtButtons() {
+    const slot = currentSlot();
+    const nineOn = isNineOn();
     extRow.querySelectorAll("button").forEach((b) => {
       const k = b.dataset.ext;
-      b.classList.toggle("active", k === "9" ? state.ext9 : state.extSlot === k);
+      const on = k === "9" ? nineOn : slot === k;
+      const held = k === "9" ? heldNine.size > 0 : heldSlotKeys.includes(k);
+      b.classList.toggle("active", on);
+      b.classList.toggle("pressed", held);
     });
   }
-  function toggleExt(key) {
-    if (key === "9") state.ext9 = !state.ext9;
-    else state.extSlot = state.extSlot === key ? "" : key;
+  function extDown(key, holderId) {
+    if (key === "9") {
+      heldNine.add(holderId);
+      latchNine = false;
+    } else {
+      if (!heldSlotKeys.includes(key)) heldSlotKeys.push(key);
+      latchSlotKey = null;
+    }
     syncExtButtons();
     settingChanged(); // retrigger any held chord so the change is audible live
+  }
+  function extUp(key, holderId) {
+    if (key === "9") heldNine.delete(holderId);
+    else {
+      const i = heldSlotKeys.indexOf(key);
+      if (i >= 0) heldSlotKeys.splice(i, 1);
+    }
+    syncExtButtons();
+    settingChanged();
   }
   extRow.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
-      toggleExt(btn.dataset.ext);
+      const key = btn.dataset.ext;
+      if (e.pointerType === "mouse") {
+        if (key === "9") latchNine = !latchNine;
+        else latchSlotKey = latchSlotKey === key ? null : key;
+        syncExtButtons();
+        settingChanged();
+      } else {
+        extPointers.set(e.pointerId, key);
+        extDown(key, e.pointerId);
+      }
     });
   });
+  ["pointerup", "pointercancel"].forEach((ev) =>
+    window.addEventListener(ev, (e) => {
+      const key = extPointers.get(e.pointerId);
+      if (key !== undefined) {
+        extPointers.delete(e.pointerId);
+        extUp(key, e.pointerId);
+      }
+    })
+  );
 
   function settingChanged() {
     // Retrigger held chords with the new setting so changes are audible live.
@@ -1810,12 +1862,13 @@
     const k = e.key.toLowerCase();
     if (k in KEYMAP) { ensureAudio(); chordOn(KEYMAP[k]); e.preventDefault(); }
     else if (k in QUALITYKEYS) qualityDown(QUALITYKEYS[k]);
-    else if (k in EXTKEYS) toggleExt(EXTKEYS[k]);
+    else if (k in EXTKEYS) extDown(EXTKEYS[k], "kb");
   });
   window.addEventListener("keyup", (e) => {
     const k = e.key.toLowerCase();
     if (k in KEYMAP) chordOff(KEYMAP[k]);
     else if (k in QUALITYKEYS) qualityUp(QUALITYKEYS[k]);
+    else if (k in EXTKEYS) extUp(EXTKEYS[k], "kb");
   });
   window.addEventListener("blur", releaseEverything);
 
