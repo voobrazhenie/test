@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Orchid — Digital Chord Synth</title>
+<title>Inspiration Machine — Digital Chord Synth</title>
 <!-- pwa:start -->
 <meta name="theme-color" content="#f3eee3">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Orchid">
+<meta name="apple-mobile-web-app-title" content="Inspiration Machine">
 <!-- pwa:end -->
 <style>
   :root {
@@ -92,16 +92,19 @@
     flex-direction: column;
     justify-content: center;
     min-width: 130px;
+    max-width: 170px;
   }
   .brand .logo {
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
     color: var(--ink);
   }
   .brand .maker {
     font-size: 8.5px;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
     color: #97907e;
     margin-top: 3px;
     text-transform: uppercase;
@@ -398,13 +401,16 @@
     font-size: 8.5px;
     color: #8d8878;
   }
+  /* Pressed feedback is color/shadow only, not a position shift: a black key
+     overlaps the top corners of its neighboring white keys, and any vertical
+     move away from that resting spot exposes the keybed's background at the
+     seam between white keys - color/shadow alone can't reveal anything since
+     the key never leaves the spot it was covering. */
   .key.down.white {
-    transform: translateY(3px);
     background: linear-gradient(180deg, #ffe9d9, #ffd9c2);
     box-shadow: 0 1px 0 #d8d0bb, 0 2px 3px rgba(60,50,30,0.25);
   }
   .key.down.black {
-    transform: translateY(3px);
     background: linear-gradient(180deg, #5d5548, #3d3931);
     box-shadow: 0 1px 0 #1a1815, 0 2px 3px rgba(0,0,0,0.4);
   }
@@ -664,14 +670,14 @@
 </head>
 <body>
 
-<h1>Orchid</h1>
-<div class="subtitle">A digital tribute to the chord machine by Telepathic Instruments</div>
+<h1>Inspiration Machine</h1>
+<div class="subtitle">A digital chord machine inspired by Telepathic Instruments' Orchid</div>
 
 <div class="orchid">
   <div class="top-row">
     <div class="brand">
-      <div class="logo">ORCHID</div>
-      <div class="maker">Telepathic&nbsp;Instruments</div>
+      <div class="logo">Inspiration<br>Machine</div>
+      <div class="maker">inspired by Telepathic Instruments</div>
     </div>
 
     <div class="display">
@@ -773,7 +779,7 @@
         </div>
         <span class="bpm-tag">BPM</span>
         <button id="midiBtn" draggable="true"
-          title="Click to download the sequence as MIDI — or drag this straight into your DAW">MIDI&nbsp;&#10515;</button>
+          title="Click to download the sequence as MIDI, or drag it out — some apps accept the drop directly, others only accept a file dragged from your desktop">MIDI&nbsp;&#10515;</button>
       </div>
     </div>
     <div class="history" id="history"></div>
@@ -794,7 +800,7 @@
   <br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
   <button id="installBtn" hidden>Install as app</button>
   <!-- pwa:end -->
-  <div class="version">Orchid v2026-07-24.1</div>
+  <div class="version">Inspiration Machine v2026-07-24.2</div>
 </div>
 
 <script>
@@ -1413,26 +1419,38 @@
   }
 
   const midiFilename = () =>
-    `orchid-${chordHistory.map((c) => c.name.replace(/#/g, "s")).join("-") || "chords"}.mid`;
+    `chords-${chordHistory.map((c) => c.name.replace(/#/g, "s")).join("-") || "chords"}.mid`;
 
-  function midiDataUrl() {
-    let s = "";
-    buildMidiFile().forEach((b) => (s += String.fromCharCode(b)));
-    return "data:audio/midi;base64," + btoa(s);
+  // Blob + object URL rather than a data: URI - the standard, best-supported
+  // way to hand the browser a "real" file for the DownloadURL drag-out
+  // mechanism. Revoked well after any plausible drag/download has finished.
+  function withMidiObjectUrl(fn) {
+    const url = URL.createObjectURL(new Blob([buildMidiFile()], { type: "audio/midi" }));
+    fn(url);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
   }
 
   midiBtn.addEventListener("click", () => {
     if (!chordHistory.length) return;
-    const a = document.createElement("a");
-    a.href = midiDataUrl();
-    a.download = midiFilename();
-    a.click();
+    withMidiObjectUrl((url) => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = midiFilename();
+      a.click();
+    });
   });
   midiBtn.addEventListener("dragstart", (e) => {
     if (!chordHistory.length) { e.preventDefault(); return; }
     e.dataTransfer.effectAllowed = "copy";
-    // Chromium: dragging this out of the browser drops a real .mid file.
-    e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${midiDataUrl()}`);
+    // Chromium: dragging this out of the browser drops a real .mid file for
+    // OS-level targets (Finder/Explorer, and apps that support the same
+    // "promised file" drag protocol). Whether a specific native app like a
+    // DAW accepts it depends on that app's own drag-and-drop implementation,
+    // not on this page - dragging to the desktop and then into the app is
+    // the reliable fallback when a target doesn't support it directly.
+    withMidiObjectUrl((url) => {
+      e.dataTransfer.setData("DownloadURL", `audio/midi:${midiFilename()}:${url}`);
+    });
   });
 
   /* --- Live MIDI Out UI: pick a port, connect, stay panic-safe --- */

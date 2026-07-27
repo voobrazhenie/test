@@ -1,7 +1,7 @@
 {
-  "name": "Orchid — Digital Chord Synth",
-  "short_name": "Orchid",
-  "description": "A playable web tribute to the Orchid chord machine by Telepathic Instruments.",
+  "name": "Inspiration Machine — Digital Chord Synth",
+  "short_name": "Inspiration Machine",
+  "description": "A playable web chord machine inspired by the Orchid from Telepathic Instruments.",
   "start_url": "./orchid.html",
   "scope": "./",
   "display": "standalone",
