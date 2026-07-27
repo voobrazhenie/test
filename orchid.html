@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Inspiration Machine — Digital Chord Synth</title>
 <!-- pwa:start -->
-<meta name="theme-color" content="#f3eee3">
+<meta name="theme-color" content="#211f1a">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
@@ -26,7 +26,13 @@
     --key-black: #35322c;
     --display-bg: #1d1b17;
     --display-amber: #ffb14a;
-    --page-bg: #cfc8ba;
+    /* Page ground: always dark, regardless of OS theme. The instrument
+       itself keeps its warm hardware colors above. */
+    --page-bg: #211f1a;
+    --page-bg2: #2d2a24;
+    --page-text: #b8b09d;
+    --page-text-dim: #8a8271;
+    --device-shadow: rgba(0,0,0,0.55);
   }
 
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -40,29 +46,13 @@
     overflow-x: hidden; /* safety net: clip rather than letting any future
                             unbreakable content push the page sideways */
     background:
-      radial-gradient(1200px 800px at 50% 10%, #ddd6c8, var(--page-bg));
+      radial-gradient(1200px 800px at 50% 10%, var(--page-bg2), var(--page-bg));
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: var(--ink);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 32px 12px 48px;
-  }
-
-  h1 {
-    font-size: 15px;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin: 0 0 4px;
-    color: #6f6858;
-  }
-  .subtitle {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    color: #8d8574;
-    margin-bottom: 24px;
-    text-transform: uppercase;
   }
 
   /* ---------- Device body ---------- */
@@ -75,8 +65,8 @@
     box-shadow:
       0 2px 0 #fff inset,
       0 -3px 0 rgba(0,0,0,0.08) inset,
-      0 18px 40px rgba(60,50,30,0.35),
-      0 4px 10px rgba(60,50,30,0.25);
+      0 18px 40px var(--device-shadow),
+      0 4px 10px var(--device-shadow);
   }
 
   .top-row {
@@ -101,15 +91,6 @@
     line-height: 1.2;
     color: var(--ink);
   }
-  .brand .maker {
-    font-size: 8.5px;
-    letter-spacing: 0.06em;
-    line-height: 1.4;
-    color: #97907e;
-    margin-top: 3px;
-    text-transform: uppercase;
-  }
-
   .display {
     flex: 1 1 220px;
     min-width: 0; /* let it shrink below its nowrap chord-name content instead of forcing the row wider */
@@ -136,6 +117,44 @@
     letter-spacing: 0.15em;
     margin-top: 4px;
     white-space: nowrap;
+  }
+  .mini-keys {
+    position: relative;
+    height: 26px;
+    margin-top: 8px;
+    max-width: 190px;
+  }
+  .mini-white-row { display: flex; height: 100%; gap: 1px; }
+  .mkey.white {
+    flex: 1;
+    min-width: 0;
+    background: #3a352b;
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset;
+    transition: background 0.08s, box-shadow 0.08s;
+  }
+  .mkey.white.active {
+    background: var(--display-amber);
+    box-shadow: 0 0 6px rgba(255,177,74,0.8);
+  }
+  .mini-black-row {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 62%;
+    pointer-events: none;
+  }
+  .mkey.black {
+    position: absolute;
+    width: 9%;
+    height: 100%;
+    background: #17140f;
+    border-radius: 0 0 2px 2px;
+    transform: translateX(-50%);
+    transition: background 0.08s, box-shadow 0.08s;
+  }
+  .mkey.black.active {
+    background: var(--display-amber);
+    box-shadow: 0 0 6px rgba(255,177,74,0.9);
   }
 
   .controls {
@@ -194,7 +213,7 @@
     align-items: center;
     gap: 8px;
   }
-  .stepper button, #fsBtn {
+  .stepper button {
     width: 26px; height: 26px;
     border-radius: 50%;
     border: 1px solid #b3ab95;
@@ -206,13 +225,7 @@
     box-shadow: 0 2px 3px rgba(0,0,0,0.2);
     line-height: 1;
   }
-  .stepper button:active, #fsBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
-  #fsBtn { font-size: 12px; font-weight: 400; }
-  #fsBtn.active {
-    background: linear-gradient(180deg, #ff6a44, var(--coral));
-    color: #fff;
-    border-color: var(--coral-dark);
-  }
+  .stepper button:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
   .stepper .value {
     font-family: "SF Mono", Menlo, Consolas, monospace;
     font-size: 12px;
@@ -369,6 +382,10 @@
     box-shadow: 0 4px 0 #d8d0bb, 0 6px 6px rgba(60,50,30,0.25);
     position: relative;
   }
+  /* The end keys (C, B) sit in the keybed's own rounded corner slot, so
+     their outer top corner needs to be rounded to fit it too. */
+  .key.white:first-child { border-radius: 6px 0 9px 9px; }
+  .key.white:last-child { border-radius: 0 6px 9px 9px; }
   .key.white .keyname {
     position: absolute;
     bottom: 8px; left: 0; right: 0;
@@ -581,17 +598,18 @@
   .footer {
     margin-top: 26px;
     font-size: 10px;
-    color: #918a78;
+    color: var(--page-text-dim);
     text-align: center;
     line-height: 1.7;
     max-width: 640px;
   }
-  .footer a { color: #7d7663; }
+  .footer a { color: var(--page-text); }
   .version {
     margin-top: 10px;
-    font-size: 9px;
+    font-size: 13px;
+    font-weight: 700;
     letter-spacing: 0.05em;
-    color: #b3ab95;
+    color: var(--display-amber);
     font-family: "SF Mono", Menlo, Consolas, monospace;
   }
   #installBtn {
@@ -610,26 +628,10 @@
   }
   #installBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--coral-dark); }
 
-  /* Zen / fullscreen mode: the instrument takes over the whole viewport.
-     Always applied by the View button; native fullscreen is attempted on
-     top where the browser allows it (iframes and iPhone Safari often don't). */
-  body.zen { padding: 0; }
-  body.zen h1, body.zen .subtitle, body.zen .footer { display: none; }
-  body.zen .orchid {
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  body.zen .keybed { flex: 1; height: auto; min-height: 116px; display: flex; }
-  body.zen .white-keys { flex: 1; height: auto; }
-
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
     html, body { padding: 10px 6px 24px; }
-    h1, .subtitle, .brand { display: none; }
+    .brand { display: none; }
     .orchid { padding: 12px 12px 12px; border-radius: 20px; }
     .top-row { gap: 8px; margin-bottom: 6px; }
     .display { padding: 6px 12px; }
@@ -650,6 +652,8 @@
     .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
     .keybed { height: 102px; margin-top: 5px; --keybed-pad: 6px; padding: var(--keybed-pad); border-radius: 10px; }
     .key.white { border-radius: 0 0 7px 7px; }
+    .key.white:first-child { border-radius: 4px 0 7px 7px; }
+    .key.white:last-child { border-radius: 0 4px 7px 7px; }
     .key.white .keyname { font-size: 9px; bottom: 5px; }
     .key.black .keyname { display: none; }
     .strum-wrap { margin-top: 7px; }
@@ -670,19 +674,19 @@
 </head>
 <body>
 
-<h1>Inspiration Machine</h1>
-<div class="subtitle">A digital chord machine inspired by Telepathic Instruments' Orchid</div>
-
 <div class="orchid">
   <div class="top-row">
     <div class="brand">
       <div class="logo">Inspiration<br>Machine</div>
-      <div class="maker">inspired by Telepathic Instruments</div>
     </div>
 
     <div class="display">
       <div class="chord-name" id="dispChord">—</div>
       <div class="chord-notes" id="dispNotes">hold a chord quality &middot; tap a key</div>
+      <div class="mini-keys" id="miniKeys">
+        <div class="mini-white-row" id="miniWhite"></div>
+        <div class="mini-black-row" id="miniBlack"></div>
+      </div>
     </div>
 
     <div class="controls">
@@ -709,10 +713,6 @@
           <span class="value" id="octVal">0</span>
           <button id="octUp" title="Octave up">+</button>
         </div>
-      </div>
-      <div class="ctl">
-        <label>View</label>
-        <button id="fsBtn" title="Toggle fullscreen">⛶</button>
       </div>
     </div>
   </div>
@@ -791,16 +791,13 @@
   Extensions (6, m7, M7, 9) hold the same way to combine with whichever quality you're playing;
   6/m7/M7 share one slot, so holding one releases the others, while 9 adds independently.
   Computer keyboard: hold <b>1–4</b> for quality, hold <b>5–8</b> for extensions; white keys
-  <b>A&nbsp;S&nbsp;D&nbsp;F&nbsp;G&nbsp;H&nbsp;J</b>, black keys <b>W&nbsp;E&nbsp;T&nbsp;Y&nbsp;U</b>.
-  With a mouse, click a quality or extension to latch it.<br>
-  This is an unofficial fan-made web tribute to the
-  <a href="https://telepathicinstruments.com" target="_blank" rel="noopener">Orchid by Telepathic Instruments</a>
-  and is not affiliated with or endorsed by them.
+  <b>A&nbsp;S&nbsp;D&nbsp;F&nbsp;G&nbsp;H&nbsp;J</b>, black keys <b>W&nbsp;E&nbsp;T&nbsp;Y&nbsp;U</b>,
+  octave <b>Z</b>&nbsp;/&nbsp;<b>C</b>. With a mouse, click a quality or extension to latch it.<br>
   <!-- pwa:start -->
   <br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
   <button id="installBtn" hidden>Install as app</button>
   <!-- pwa:end -->
-  <div class="version">Inspiration Machine v2026-07-24.2</div>
+  <div class="version">Inspiration Machine v2026-07-27.1</div>
 </div>
 
 <script>
@@ -809,7 +806,7 @@
 
   /* ============================= State ============================= */
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  // Orchid hardware-compatible harmony model: a chord QUALITY is held while
+  // Harmony model: a chord QUALITY is held while
   // tapping a note key (same gesture as before); EXTENSIONS are standing
   // toggles that modify whichever quality is currently held. At most one of
   // 6 / m7 / M7 is engaged at a time — they share one "seventh slot" on the
@@ -958,6 +955,15 @@
     else param.cancelScheduledValues(t);
   }
 
+  // Release called before a staggered (ARP) note's own onset: its envelope
+  // hasn't started yet, so cancelling automation at `onset` would leave the
+  // gain stuck at the GainNode's implicit default (1) instead of 0, producing
+  // an audible pop. Wipe the whole envelope and pin it silent instead.
+  function silenceBeforeOnset(param, onset) {
+    param.cancelScheduledValues(onset);
+    param.setValueAtTime(0, onset);
+  }
+
   // Disconnect every node in a voice once it's actually done playing, so a
   // long session doesn't accumulate silent-but-still-processed nodes.
   function cleanupOnEnded(endpoint, nodes) {
@@ -999,6 +1005,7 @@
       cleanupOnEnded(carrier, [carrier, mod, modGain, sub, subGain, amp]);
       return {
         stop(t) {
+          if (t < time) { silenceBeforeOnset(amp.gain, time); carrier.stop(time); mod.stop(time); sub.stop(time); return; }
           cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.09);
           carrier.stop(t + 0.6); mod.stop(t + 0.6); sub.stop(t + 0.6);
@@ -1031,6 +1038,7 @@
       cleanupOnEnded(oscs[0], [...oscs, filter, amp]);
       return {
         stop(t) {
+          if (t < time) { silenceBeforeOnset(amp.gain, time); oscs.forEach((o) => o.stop(time)); return; }
           cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.11);
           oscs.forEach((o) => o.stop(t + 0.8));
@@ -1061,6 +1069,7 @@
       cleanupOnEnded(oscs[0], [...oscs, filter, amp]);
       return {
         stop(t) {
+          if (t < time) { silenceBeforeOnset(amp.gain, time); oscs.forEach((o) => o.stop(time)); return; }
           cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.5);
           oscs.forEach((o) => o.stop(t + 2.5));
@@ -1095,6 +1104,7 @@
       cleanupOnEnded(o, [o, o2, o2g, filter, amp]);
       return {
         stop(t) {
+          if (t < time) { silenceBeforeOnset(amp.gain, time); o.stop(time); o2.stop(time); return; }
           cancelAndHold(amp.gain, t);
           amp.gain.setTargetAtTime(0, t, 0.05);
           o.stop(t + 0.4); o2.stop(t + 0.4);
@@ -1201,7 +1211,12 @@
     ensureAudio();
     if (heldChords.has(rootIndex)) return;
 
-    if (state.hold && latched) releaseLatched();
+    if (state.arp) {
+      // Monophonic ARP: tapping a new note steals from whatever's still ringing.
+      stopAllChords();
+    } else if (state.hold && latched) {
+      releaseLatched();
+    }
 
     const chord = buildChord(rootIndex);
     const t = ctx.currentTime;
@@ -1236,7 +1251,9 @@
     latched = null;
   }
 
-  function releaseEverything() {
+  // Stop every currently-sounding chord (held keys + any latched HOLD chord),
+  // e.g. when a new note steals the voice in monophonic ARP mode.
+  function stopAllChords() {
     if (!ctx) return;
     const t = ctx.currentTime;
     heldChords.forEach((h, idx) => {
@@ -1245,6 +1262,10 @@
     });
     heldChords.clear();
     releaseLatched();
+  }
+
+  function releaseEverything() {
+    stopAllChords();
     heldQualities.length = 0;
     syncQualityButtons();
     heldSlotKeys.length = 0;
@@ -1263,6 +1284,7 @@
   function updateDisplay(chord) {
     dispChord.textContent = chord.name;
     dispNotes.textContent = notesStr(chord.notes);
+    updateMiniKeyboard(chord.notes);
   }
 
   /* --- Last-four chord history --- */
@@ -1606,6 +1628,31 @@
 
   const keyEl = (idx) => document.querySelector(`.key[data-note="${idx}"]`);
 
+  // Tiny read-only keyboard in the display: highlights the pitch classes of
+  // the current chord so they can be reproduced on an external synth.
+  const miniWhiteEl = $("#miniWhite");
+  const miniBlackEl = $("#miniBlack");
+  WHITE.forEach((idx) => {
+    const el = document.createElement("div");
+    el.className = "mkey white";
+    el.dataset.note = idx;
+    miniWhiteEl.appendChild(el);
+  });
+  BLACKS.forEach(({ idx }) => {
+    const el = document.createElement("div");
+    el.className = "mkey black";
+    el.dataset.note = idx;
+    el.style.left = (BLACK_POS[idx] * 100) + "%";
+    miniBlackEl.appendChild(el);
+  });
+  const miniKeyEls = document.querySelectorAll(".mkey");
+  function updateMiniKeyboard(notes) {
+    const pitchClasses = new Set(notes.map((n) => ((n % 12) + 12) % 12));
+    miniKeyEls.forEach((el) => {
+      el.classList.toggle("active", pitchClasses.has(+el.dataset.note));
+    });
+  }
+
   // Pointer handling with glissando across keys.
   let pointerDownKey = null;
   document.querySelectorAll(".key").forEach((el) => {
@@ -1811,41 +1858,17 @@
   function step(el, fn) { $(el).addEventListener("pointerdown", fn); }
   step("#voiceUp",   () => { state.voicing = Math.min(6, state.voicing + 1); syncSteppers(); settingChanged(); });
   step("#voiceDown", () => { state.voicing = Math.max(0, state.voicing - 1); syncSteppers(); settingChanged(); });
-  step("#octUp",     () => { state.octave = Math.min(2, state.octave + 1); syncSteppers(); settingChanged(); });
-  step("#octDown",   () => { state.octave = Math.max(-2, state.octave - 1); syncSteppers(); settingChanged(); });
+  function octaveStep(delta) {
+    state.octave = Math.max(-2, Math.min(2, state.octave + delta));
+    syncSteppers();
+    settingChanged();
+  }
+  step("#octUp",     () => octaveStep(1));
+  step("#octDown",   () => octaveStep(-1));
   function syncSteppers() {
     $("#voiceVal").textContent = VOICING_NAMES[state.voicing];
     $("#octVal").textContent = (state.octave > 0 ? "+" : "") + state.octave;
   }
-
-  /* --- Fullscreen toggle --- */
-  // Zen mode (instrument fills the viewport) always works; native
-  // fullscreen is attempted on top but is often blocked in iframes and
-  // unavailable on iPhone Safari, so it's best-effort only.
-  const fsBtn = $("#fsBtn");
-  function setZen(on) {
-    document.body.classList.toggle("zen", on);
-    fsBtn.classList.toggle("active", on);
-  }
-  fsBtn.addEventListener("click", () => {
-    const on = !document.body.classList.contains("zen");
-    setZen(on);
-    try {
-      if (on) {
-        const el = document.documentElement;
-        const req = el.requestFullscreen || el.webkitRequestFullscreen;
-        if (req) Promise.resolve(req.call(el)).catch(() => {});
-      } else if (document.fullscreenElement || document.webkitFullscreenElement) {
-        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-      }
-    } catch { /* zen mode alone is fine */ }
-  });
-  // Leaving native fullscreen (e.g. via Esc) also leaves zen mode.
-  ["fullscreenchange", "webkitfullscreenchange"].forEach((ev) =>
-    document.addEventListener(ev, () => {
-      if (!(document.fullscreenElement || document.webkitFullscreenElement)) setZen(false);
-    })
-  );
 
   /* --- Sliders --- */
   $("#volume").addEventListener("input", (e) => { state.volume = e.target.value / 100; updateMix(); });
@@ -1918,6 +1941,8 @@
     if (k in KEYMAP) { ensureAudio(); chordOn(KEYMAP[k]); e.preventDefault(); }
     else if (k in QUALITYKEYS) qualityDown(QUALITYKEYS[k]);
     else if (k in EXTKEYS) extDown(EXTKEYS[k], "kb");
+    else if (k === "z") octaveStep(-1);
+    else if (k === "c") octaveStep(1);
   });
   window.addEventListener("keyup", (e) => {
     const k = e.key.toLowerCase();

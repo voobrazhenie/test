@@ -1,6 +1,6 @@
-/* Orchid service worker: precache the app shell, then serve cache-first
+/* Service worker: precache the app shell, then serve cache-first
    so the instrument keeps working offline. */
-const CACHE = "orchid-v1";
+const CACHE = "im-v2";
 const ASSETS = [
   "./orchid.html",
   "./manifest.webmanifest",
