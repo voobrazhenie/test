@@ -49,10 +49,14 @@
       radial-gradient(1200px 800px at 50% 10%, var(--page-bg2), var(--page-bg));
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: var(--ink);
+  }
+  body {
+    /* Only body gets the padding — applying it to html too (as this rule
+       used to) silently doubles every edge, since both boxes stack. */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px 12px 48px;
+    padding: 12px 12px 10px;
   }
 
   /* ---------- Device body ---------- */
@@ -61,7 +65,7 @@
     max-width: 100%; /* redundant safety net alongside the min() clamp above */
     background: linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
     border-radius: 28px;
-    padding: 26px 28px 30px;
+    padding: 16px 22px 18px;
     box-shadow:
       0 2px 0 #fff inset,
       0 -3px 0 rgba(0,0,0,0.08) inset,
@@ -71,10 +75,10 @@
 
   .top-row {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: stretch;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
 
   .brand {
@@ -226,6 +230,20 @@
     line-height: 1;
   }
   .stepper button:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+  .icon-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid #b3ab95;
+    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    line-height: 1;
+    flex: none;
+  }
+  .icon-btn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
   .stepper .value {
     font-family: "SF Mono", Menlo, Consolas, monospace;
     font-size: 12px;
@@ -240,15 +258,16 @@
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: #97907e;
-    margin: 16px 2px 8px;
+    margin: 9px 2px 5px;
   }
 
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
   .obtn {
+    position: relative;
     border: none;
     border-radius: 12px;
-    padding: 12px 0;
+    padding: 10px 0;
     flex: 1 1 70px;
     min-width: 64px;
     font-size: 12px;
@@ -261,16 +280,31 @@
       0 1px 0 rgba(255,255,255,0.4) inset,
       0 4px 0 var(--coral-dark),
       0 6px 8px rgba(60,20,5,0.3);
-    transition: transform 0.05s, box-shadow 0.05s, filter 0.15s;
+    transition: transform 0.04s, box-shadow 0.04s, background 0.08s;
   }
-  .obtn:active, .obtn.pressed {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--coral-dark), 0 2px 4px rgba(60,20,5,0.3);
+  /* A little recessed LED, like a hardware switch's engaged light — lit
+     only while the button is actually down (held or latched), never just
+     from focus/hover, so "on" always reads as "physically pressed in". */
+  .obtn::after {
+    content: "";
+    position: absolute;
+    top: 7px; right: 9px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.2);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.4);
+    transition: background 0.08s, box-shadow 0.08s;
+  }
+  .obtn:active, .obtn.pressed, .obtn.active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--coral-dark), 0 1px 3px rgba(60,20,5,0.4) inset;
   }
   .obtn.active {
-    filter: brightness(1.08);
-    outline: 3px solid rgba(244,80,44,0.35);
-    outline-offset: 2px;
+    background: linear-gradient(180deg, #e2461f, #b8371a);
+  }
+  .obtn.active::after {
+    background: #ffe6a0;
+    box-shadow: 0 0 5px 2px rgba(255,203,110,0.95), inset 0 0 2px rgba(255,255,255,0.8);
   }
   .obtn.gray {
     color: var(--ink);
@@ -280,13 +314,17 @@
       0 4px 0 #b7af99,
       0 6px 8px rgba(60,50,30,0.25);
   }
-  .obtn.gray:active, .obtn.gray.pressed {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 #b7af99, 0 2px 4px rgba(60,50,30,0.25);
+  .obtn.gray::after { background: rgba(0,0,0,0.12); box-shadow: inset 0 1px 1px rgba(0,0,0,0.25); }
+  .obtn.gray:active, .obtn.gray.pressed, .obtn.gray.active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #b7af99, 0 1px 3px rgba(60,50,30,0.35) inset;
   }
   .obtn.gray.active {
-    outline: 3px solid rgba(43,40,35,0.25);
-    background: linear-gradient(180deg, #fff, #e9e2cf);
+    background: linear-gradient(180deg, #efe9d8, #ddd5bf);
+  }
+  .obtn.gray.active::after {
+    background: var(--coral);
+    box-shadow: 0 0 5px 2px rgba(244,80,44,0.75), inset 0 0 2px rgba(255,255,255,0.5);
   }
   .obtn .kbd-hint {
     display: block;
@@ -317,7 +355,7 @@
     cursor: pointer;
     white-space: nowrap;
   }
-  #midiOutBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; }
+  #midiOutBtn:active { transform: translateY(2px); box-shadow: 0 0 0 #b7af99, 0 1px 2px rgba(60,50,30,0.3) inset; }
   #midiOutBtn.active {
     background: linear-gradient(180deg, #ff6a44, var(--coral));
     color: #fff;
@@ -433,11 +471,11 @@
   }
 
   /* ---------- Strum plate ---------- */
-  .strum-wrap { margin-top: 18px; }
+  .strum-wrap { margin-top: 8px; }
   .strum {
     display: flex;
     gap: 4px;
-    height: 64px;
+    height: 46px;
     border-radius: 12px;
     background: #c4bca7;
     padding: 6px;
@@ -477,7 +515,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 10px 2px 6px;
+    margin: 6px 2px 4px;
   }
   .bpm-tag {
     font-size: 8.5px;
@@ -497,11 +535,10 @@
     line-height: 1;
     padding: 0;
   }
-  #playBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+  #playBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.25) inset; }
   #playBtn.on {
-    filter: brightness(1.12);
-    outline: 3px solid rgba(244,80,44,0.35);
-    outline-offset: 2px;
+    background: linear-gradient(180deg, #c23c1c, #9c2f16);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35) inset, 0 0 8px 2px rgba(244,80,44,0.7);
   }
   #midiBtn {
     padding: 7px 14px;
@@ -595,22 +632,53 @@
     text-shadow: 0 0 18px rgba(255,177,74,0.95);
   }
 
-  .footer {
-    margin-top: 26px;
-    font-size: 10px;
-    color: var(--page-text-dim);
-    text-align: center;
-    line-height: 1.7;
-    max-width: 640px;
-  }
-  .footer a { color: var(--page-text); }
   .version {
     margin-top: 10px;
+    text-align: center;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--display-amber);
     font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  /* ---------- Help overlay ---------- */
+  .help-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+  .help-overlay[hidden] { display: none; }
+  .help-panel {
+    position: relative;
+    max-width: 480px;
+    max-height: 100%;
+    overflow-y: auto;
+    background: linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 26px 28px;
+    font-size: 12px;
+    line-height: 1.7;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .help-panel a { color: var(--ink); }
+  .help-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(43,40,35,0.1);
+    font-size: 15px;
+    line-height: 1;
+    color: var(--ink);
+    cursor: pointer;
   }
   #installBtn {
     margin-top: 12px;
@@ -630,7 +698,7 @@
 
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
-    html, body { padding: 10px 6px 24px; }
+    body { padding: 10px 6px 14px; }
     .brand { display: none; }
     .orchid { padding: 12px 12px 12px; border-radius: 20px; }
     .top-row { gap: 8px; margin-bottom: 6px; }
@@ -649,7 +717,9 @@
     #qualityRow .obtn, #extRow .obtn { flex: 1 1 calc(25% - 6px); }
     #engineRow .obtn { flex: 1 1 calc(25% - 6px); }
     .obtn .kbd-hint, .key .hint { display: none; }
-    .obtn:active, .obtn.pressed, .obtn.gray:active, .obtn.gray.pressed { transform: translateY(2px); }
+    .obtn:active, .obtn.pressed, .obtn.active,
+    .obtn.gray:active, .obtn.gray.pressed, .obtn.gray.active { transform: translateY(2px); }
+    .obtn::after { width: 5px; height: 5px; top: 5px; right: 6px; }
     .keybed { height: 102px; margin-top: 5px; --keybed-pad: 6px; padding: var(--keybed-pad); border-radius: 10px; }
     .key.white { border-radius: 0 0 7px 7px; }
     .key.white:first-child { border-radius: 4px 0 7px 7px; }
@@ -668,7 +738,7 @@
     .history-ctl { margin: 3px 2px 1px; }
     #midiBtn { display: none; } /* drag-out export is a desktop affair */
     #midiSection { display: none; } /* LoopBe/loopMIDI + a DAW is a desktop workflow */
-    .footer { margin-top: 14px; }
+    .version { margin-top: 6px; }
   }
 </style>
 </head>
@@ -714,6 +784,7 @@
           <button id="octUp" title="Octave up">+</button>
         </div>
       </div>
+      <button id="helpBtn" class="icon-btn" title="Help &amp; keyboard shortcuts">?</button>
     </div>
   </div>
 
@@ -784,20 +855,24 @@
     </div>
     <div class="history" id="history"></div>
   </div>
+
+  <div class="version">Inspiration Machine v2026-07-27.1</div>
 </div>
 
-<div class="footer">
-  Hold a chord-quality key, then tap a note key — with nothing held, keys play single notes.
-  Extensions (6, m7, M7, 9) hold the same way to combine with whichever quality you're playing;
-  6/m7/M7 share one slot, so holding one releases the others, while 9 adds independently.
-  Computer keyboard: hold <b>1–4</b> for quality, hold <b>5–8</b> for extensions; white keys
-  <b>A&nbsp;S&nbsp;D&nbsp;F&nbsp;G&nbsp;H&nbsp;J</b>, black keys <b>W&nbsp;E&nbsp;T&nbsp;Y&nbsp;U</b>,
-  octave <b>Z</b>&nbsp;/&nbsp;<b>C</b>. With a mouse, click a quality or extension to latch it.<br>
-  <!-- pwa:start -->
-  <br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
-  <button id="installBtn" hidden>Install as app</button>
-  <!-- pwa:end -->
-  <div class="version">Inspiration Machine v2026-07-27.1</div>
+<div class="help-overlay" id="helpOverlay" hidden>
+  <div class="help-panel">
+    <button class="help-close" id="helpClose" aria-label="Close">&times;</button>
+    Hold a chord-quality key, then tap a note key — with nothing held, keys play single notes.
+    Extensions (6, m7, M7, 9) hold the same way to combine with whichever quality you're playing;
+    6/m7/M7 share one slot, so holding one releases the others, while 9 adds independently.
+    Computer keyboard: hold <b>1–4</b> for quality, hold <b>5–8</b> for extensions; white keys
+    <b>A&nbsp;S&nbsp;D&nbsp;F&nbsp;G&nbsp;H&nbsp;J</b>, black keys <b>W&nbsp;E&nbsp;T&nbsp;Y&nbsp;U</b>,
+    octave <b>Z</b>&nbsp;/&nbsp;<b>C</b>. With a mouse, click a quality or extension to latch it.
+    <!-- pwa:start -->
+    <br><br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
+    <button id="installBtn" hidden>Install as app</button>
+    <!-- pwa:end -->
+  </div>
 </div>
 
 <script>
@@ -1688,7 +1763,11 @@
     row.addEventListener("pointerdown", (e) => {
       const btn = e.target.closest("button");
       if (!btn || !btn.dataset[dataAttr]) return;
-      row.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+      // Scoped to buttons that share this same data attribute (e.g. the 4
+      // engine buttons), not every button in the row — #engineRow also
+      // hosts HOLD/BASS/1 OCT/ARP, which manage their own "active" class
+      // independently and must be left alone here.
+      row.querySelectorAll(`button[data-${dataAttr}]`).forEach((b) => b.classList.toggle("active", b === btn));
       onPick(btn.dataset[dataAttr]);
     });
   }
@@ -1873,6 +1952,13 @@
   /* --- Sliders --- */
   $("#volume").addEventListener("input", (e) => { state.volume = e.target.value / 100; updateMix(); });
   $("#reverb").addEventListener("input", (e) => { state.reverb = e.target.value / 100; updateMix(); });
+
+  /* --- Help overlay --- */
+  const helpOverlay = $("#helpOverlay");
+  $("#helpBtn").addEventListener("click", () => { helpOverlay.hidden = false; });
+  $("#helpClose").addEventListener("click", () => { helpOverlay.hidden = true; });
+  helpOverlay.addEventListener("click", (e) => { if (e.target === helpOverlay) helpOverlay.hidden = true; });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !helpOverlay.hidden) helpOverlay.hidden = true; });
 
   /* --- Strum plate --- */
   const strumEl = $("#strum");
