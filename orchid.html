@@ -214,6 +214,75 @@
     --device-shadow: rgba(0,20,15,0.6);
   }
 
+  /* ---- Skin 4: Field Unit — a battered army-green metal chassis with
+     walnut end cheeks, drilled screws, rust bloom and a green phosphor
+     window. Per-row button colours (brick / burnt orange / olive) are set
+     further down, scoped to each row. ---- */
+  :root[data-skin="fieldunit"] {
+    --body-cream: #a6ab8a;
+    --body-cream-dark: #8b9170;
+    --panel-line: #6f7557;
+    --coral: #a8433a;
+    --coral-rgb: 168,67,58;
+    --coral-dark: #6f261f;
+    --coral-top: #bd5347;
+    --coral-light: #c96556;
+    --on-top: #8e3229;
+    --on-bot: #5f1f19;
+    --ink: #2c3022;
+    --label: #43492f;
+    --label-2: #4f563a;
+    --sublabel: #6f8a48;
+    --key-white: #e6dfc6;
+    --key-white-top: #f2ecd8;
+    --key-white-bot: #cfc7a9;
+    --key-white-border: #a9a184;
+    --key-white-shadow: #9aa07f;
+    --key-black: #26251f;
+    --key-black-top: #3c3a31;
+    --key-black-bot: #17160f;
+    --btn-gray-top: #848f56;
+    --btn-gray-bot: #68743f;
+    --btn-gray-shadow: #47502a;
+    --btn-gray-border: #5c6539;
+    --track-bg: #6f7557;
+    --display-bg: #0d1a0d;
+    --display-amber: #a8e05a;
+    --display-amber-rgb: 168,224,90;
+    --keybed-bg: #6b7154;
+    --shadow-rgb: 28,32,18;
+    --accent-shadow-rgb: 45,16,10;
+    --led-lit: #ffb347;
+    --led-lit-rgb: 255,179,71;
+    --key-black-shadow: #0e0d08;
+    --key-white-name: #8b8468;
+    --key-white-hint: #a9a184;
+    --key-black-name: #7c7a68;
+    --key-down-white-top: #f6efd0;
+    --key-down-white-bot: #ddd2a8;
+    --key-down-black-top: #4d4a3d;
+    --key-down-black-bot: #2b2922;
+    --mini-key-white: #1e2c18;
+    --mini-key-black: #0a120a;
+    --hist-hint: #7f9c4e;
+    --hist-empty: #24331c;
+    --hist-lit: #d2f58a;
+    --dot-error: #c04a34;
+    --accent-active-top: #8e3229;
+    --accent-active-bot: #5f1f19;
+    --gray-active-top: #6d7845;
+    --gray-active-bot: #56612f;
+    --page-bg: #1b1d15;
+    --page-bg2: #2a2d20;
+    --page-text: #a7ad8c;
+    --page-text-dim: #767c60;
+    --device-shadow: rgba(0,0,0,0.6);
+    --radius-lg: 18px;
+    --wood-1: #6b4726;
+    --wood-2: #4a2e18;
+    --rail-w: 18px;
+  }
+
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
 
   html, body {
@@ -904,6 +973,7 @@
   .swatch-classic { background: linear-gradient(135deg, #f3eee3 0%, #f3eee3 38%, #f4502c 38%, #f4502c 66%, #1d1b17 66%, #1d1b17 100%); }
   .swatch-vintage { background: linear-gradient(135deg, #d9c8a0 0%, #d9c8a0 38%, #a8461f 38%, #a8461f 66%, #191309 66%, #191309 100%); }
   .swatch-lofi { background: linear-gradient(135deg, #8fd6c1 0%, #8fd6c1 38%, #ff5178 38%, #ff5178 66%, #0f380f 66%, #0f380f 100%); }
+  .swatch-fieldunit { background: linear-gradient(135deg, #a6ab8a 0%, #a6ab8a 38%, #a8433a 38%, #a8433a 66%, #0d1a0d 66%, #0d1a0d 100%); }
   .skin-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .skin-name { font-weight: 700; font-size: 13px; letter-spacing: 0.03em; }
   .skin-desc { font-size: 11px; opacity: 0.7; }
@@ -993,6 +1063,219 @@
     );
   }
 
+  /* ================= Field Unit ================= */
+  [data-skin="fieldunit"] body {
+    font-family: "SF Mono", "Consolas", Menlo, monospace;
+  }
+  /* Walnut end cheeks either side of a scuffed olive chassis: wood rails
+     first (topmost layers), then rust bloom, then the metal itself. */
+  [data-skin="fieldunit"] .orchid {
+    /* Extra top/bottom room so the corner screws sit clear of the content. */
+    padding: 24px calc(var(--rail-w) + 14px) 24px;
+    background:
+      linear-gradient(90deg, #3c2412 0%, var(--wood-1) 22%, var(--wood-2) 55%, #2f1c0e 100%),
+      linear-gradient(270deg, #3c2412 0%, var(--wood-1) 22%, var(--wood-2) 55%, #2f1c0e 100%),
+      radial-gradient(ellipse 60px 26px at 22% 14%, rgba(120,62,28,0.30), transparent 70%),
+      radial-gradient(ellipse 44px 20px at 88% 62%, rgba(120,62,28,0.26), transparent 70%),
+      radial-gradient(ellipse 34px 16px at 62% 92%, rgba(120,62,28,0.20), transparent 70%),
+      linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
+    background-size: var(--rail-w) 100%, var(--rail-w) 100%, auto, auto, auto, auto;
+    background-position: left center, right center, 0 0, 0 0, 0 0, 0 0;
+    background-repeat: no-repeat;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.18) inset,
+      0 -3px 0 rgba(0,0,0,0.16) inset,
+      0 18px 40px var(--device-shadow),
+      0 4px 10px var(--device-shadow);
+  }
+  /* Scuffs, grain and a vignette, laid over the panel but under the UI. */
+  [data-skin="fieldunit"] .orchid::before {
+    content: "";
+    position: absolute;
+    inset: 0 var(--rail-w);
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(96deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(84deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 11px),
+      radial-gradient(circle at 18% 32%, rgba(0,0,0,0.07) 0 2px, transparent 2px),
+      radial-gradient(circle at 74% 12%, rgba(0,0,0,0.06) 0 1.5px, transparent 1.5px),
+      radial-gradient(circle at 46% 68%, rgba(0,0,0,0.06) 0 2px, transparent 2px),
+      radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.22) 100%);
+    background-size: auto, auto, 47px 47px, 61px 61px, 39px 39px, 100% 100%;
+    mix-blend-mode: multiply;
+  }
+  /* Four slotted screws holding the panel to the chassis. */
+  [data-skin="fieldunit"] .orchid::after {
+    content: "";
+    position: absolute;
+    inset: 0 var(--rail-w);
+    pointer-events: none;
+    /* One layer per screw — a single image can't take four positions. */
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23b3ab90'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='none' stroke='%23000' stroke-opacity='.4'/%3E%3Cpath d='M4.2 9.2 11.8 6.9' stroke='%23000' stroke-opacity='.5' stroke-width='1.7'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23b3ab90'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='none' stroke='%23000' stroke-opacity='.4'/%3E%3Cpath d='M5 6.5 11 9.5' stroke='%23000' stroke-opacity='.5' stroke-width='1.7'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23b3ab90'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='none' stroke='%23000' stroke-opacity='.4'/%3E%3Cpath d='M8 4.2 8 11.8' stroke='%23000' stroke-opacity='.5' stroke-width='1.7'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.6' fill='%23b3ab90'/%3E%3Ccircle cx='8' cy='8' r='6.6' fill='none' stroke='%23000' stroke-opacity='.4'/%3E%3Cpath d='M4.4 7.2 11.6 8.8' stroke='%23000' stroke-opacity='.5' stroke-width='1.7'/%3E%3C/svg%3E");
+    background-size: 15px 15px;
+    background-repeat: no-repeat;
+    background-position: 6px 6px, calc(100% - 6px) 6px, 6px calc(100% - 6px), calc(100% - 6px) calc(100% - 6px);
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45));
+  }
+  /* Stencilled section headings, each trailing off into a rule. */
+  [data-skin="fieldunit"] .section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--label);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.22);
+  }
+  [data-skin="fieldunit"] .section-label::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    border-top: 1px solid rgba(0,0,0,0.18);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+  }
+  /* Recessed window with a thick metal bezel. */
+  [data-skin="fieldunit"] .display,
+  [data-skin="fieldunit"] .history {
+    border: 2px solid rgba(0,0,0,0.35);
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,0.14),
+      0 3px 10px rgba(0,0,0,0.6) inset;
+  }
+  [data-skin="fieldunit"] .display::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.30) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at 50% 45%, rgba(168,224,90,0.10), transparent 70%);
+  }
+  /* Power lamp in the corner of the glass. */
+  [data-skin="fieldunit"] .display::before {
+    content: "";
+    position: absolute;
+    top: 9px; right: 11px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ff5a3c;
+    box-shadow: 0 0 6px 2px rgba(255,90,60,0.55);
+    z-index: 1;
+  }
+  /* Per-row button colours, straight off the reference panel: brick for
+     quality, burnt orange for extensions, olive for sound & mode. Setting
+     the accent tokens on the row itself means every button state (rest,
+     held, latched, LED) recolours together with no extra rules. */
+  [data-skin="fieldunit"] #qualityRow {
+    --coral: #a8433a; --coral-top: #bd5347; --coral-dark: #6f261f;
+    --accent-active-top: #8e3229; --accent-active-bot: #5f1f19;
+  }
+  [data-skin="fieldunit"] #extRow {
+    --coral: #c06424; --coral-top: #d47a2e; --coral-dark: #8a4416;
+    --accent-active-top: #a2521c; --accent-active-bot: #703910;
+  }
+  [data-skin="fieldunit"] #engineRow {
+    --coral: #68743f; --coral-top: #848f56; --coral-dark: #47502a;
+    --accent-active-top: #56612f; --accent-active-bot: #3d4622;
+  }
+  [data-skin="fieldunit"] #engineRow .obtn.gray { color: #f2ecd8; }
+  /* Engine buttons are .gray, whose lit LED normally borrows the accent
+     colour; force the same amber lamp the rest of the panel uses. */
+  [data-skin="fieldunit"] #engineRow .obtn.gray.active::after {
+    background: var(--led-lit);
+    box-shadow: 0 0 5px 2px rgba(var(--led-lit-rgb),0.9), inset 0 0 2px rgba(255,255,255,0.7);
+  }
+  [data-skin="fieldunit"] .obtn {
+    text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+    border-radius: 8px;
+  }
+  /* Worn slot faders rather than the reference's rotary knobs — same
+     drag-anywhere behaviour and keyboard support as every other skin. */
+  [data-skin="fieldunit"] .ctl input[type=range]::-webkit-slider-runnable-track,
+  [data-skin="fieldunit"] .ctl input[type=range]::-moz-range-track {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.45) inset;
+    border: 1px solid rgba(0,0,0,0.25);
+  }
+  [data-skin="fieldunit"] .ctl input[type=range]::-webkit-slider-thumb {
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, #d8d2b8, #9aa07f);
+  }
+  [data-skin="fieldunit"] .ctl input[type=range]::-moz-range-thumb {
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, #d8d2b8, #9aa07f);
+  }
+  /* Drilled-metal strum plate. */
+  [data-skin="fieldunit"] .strum .seg {
+    background:
+      radial-gradient(circle at 6px 6px, rgba(0,0,0,0.30) 0 1.4px, transparent 1.4px),
+      linear-gradient(180deg, var(--coral-light), var(--coral));
+    background-size: 12px 12px, auto;
+  }
+  [data-skin="fieldunit"] .keybed {
+    border: 2px solid rgba(0,0,0,0.3);
+  }
+  /* Engraved nameplate at the foot of the chassis. */
+  [data-skin="fieldunit"] .version span {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(0,0,0,0.2);
+    border-top-color: rgba(255,255,255,0.2);
+    color: #39402a;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+    border-radius: 4px;
+    letter-spacing: 0.14em;
+  }
+
+  /* ---- Stick-on decorations, shown only where a skin opts in ---- */
+  .deco { display: none; }
+  [data-skin="fieldunit"] .deco { display: block; }
+  .deco-cat {
+    margin-top: 10px;
+    text-align: center;
+    transform: rotate(-4deg);
+  }
+  .deco-cat svg { width: 54px; height: 40px; display: block; margin: 0 auto; }
+  .deco-cat span {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: #f4efdd;
+    border: 1px solid rgba(0,0,0,0.18);
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.25;
+    color: #33372a;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .deco-tape {
+    position: absolute;
+    left: calc(var(--rail-w) + 12px);
+    bottom: 12px;
+    transform: rotate(-5deg);
+    padding: 5px 10px;
+    background: rgba(238,228,196,0.86);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0.06em;
+    color: #4a4530;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  /* The tape note would collide with the transport controls once the
+     device narrows, so it only appears when there's room for it. */
+  @media (max-width: 900px) {
+    [data-skin="fieldunit"] .deco-tape { display: none; }
+  }
+
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
     body { padding: 10px 6px 14px; }
@@ -1045,6 +1328,17 @@
   <div class="top-row">
     <div class="brand">
       <div class="logo">Inspiration<br>Machine</div>
+      <div class="deco deco-cat" aria-hidden="true">
+        <svg viewBox="0 0 60 44" fill="none">
+          <path d="M10 16 6 4l12 6M50 16 54 4l-12 6" fill="#26251f"/>
+          <ellipse cx="30" cy="26" rx="23" ry="17" fill="#26251f"/>
+          <circle cx="21" cy="23" r="3.4" fill="#f4efdd"/>
+          <circle cx="39" cy="23" r="3.4" fill="#f4efdd"/>
+          <path d="M25 32q5 4 10 0" stroke="#f4efdd" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 25h9M4 29h9M47 25h9M47 29h9" stroke="#26251f" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>Chords are<br>feelings</span>
+      </div>
     </div>
 
     <div class="display">
@@ -1154,7 +1448,8 @@
     <div class="history" id="history"></div>
   </div>
 
-  <div class="version"><span>Inspiration Machine v2026-07-30.1</span></div>
+  <div class="deco deco-tape" aria-hidden="true">Calibrated for<br>lo-fi vibes</div>
+  <div class="version"><span>Inspiration Machine v2026-07-30.2</span></div>
 </div>
 
 <div class="help-overlay" id="helpOverlay" hidden>
@@ -1197,6 +1492,13 @@
         <span class="skin-info">
           <span class="skin-name">Lo-Fi 8-Bit</span>
           <span class="skin-desc">Chunky, pixel-console vibes.</span>
+        </span>
+      </button>
+      <button class="skin-card" data-skin="fieldunit">
+        <span class="skin-swatch swatch-fieldunit"></span>
+        <span class="skin-info">
+          <span class="skin-name">Field Unit</span>
+          <span class="skin-desc">Battered olive metal, walnut cheeks, phosphor glass.</span>
         </span>
       </button>
     </div>
