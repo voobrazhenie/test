@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Inspiration Machine — Digital Chord Synth</title>
+<script>try{document.documentElement.dataset.skin=localStorage.getItem("im-skin")||"classic";}catch(e){}</script>
 <!-- pwa:start -->
 <meta name="theme-color" content="#211f1a">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -16,16 +17,66 @@
 <!-- pwa:end -->
 <style>
   :root {
+    /* ---- Skinnable hardware palette (see the data-skin overrides near
+       the end of this stylesheet for Vintage Analog / Lo-Fi 8-Bit). This
+       block is the "Classic" skin's values, used whenever data-skin is
+       absent or "classic". ---- */
     --body-cream: #f3eee3;
     --body-cream-dark: #e6dfd0;
     --panel-line: #d8d0bd;
     --coral: #f4502c;
+    --coral-rgb: 244,80,44;
     --coral-dark: #d43e1e;
+    --coral-top: #ff6a44;
+    --coral-light: #ff8763;
+    --on-top: #c23c1c;
+    --on-bot: #9c2f16;
     --ink: #2b2823;
+    --label: #7d7663;
+    --label-2: #97907e;
+    --sublabel: #8f7a52;
     --key-white: #faf7ef;
+    --key-white-top: #fffdf6;
+    --key-white-bot: #eae4d4;
+    --key-white-border: #cfc7b2;
+    --key-white-shadow: #d8d0bd;
     --key-black: #35322c;
+    --key-black-top: #4a463e;
+    --key-black-bot: #262420;
+    --btn-gray-top: #fdfaf2;
+    --btn-gray-bot: #ddd6c2;
+    --btn-gray-shadow: #b7af99;
+    --btn-gray-border: #b3ab95;
+    --track-bg: #c9c1ac;
     --display-bg: #1d1b17;
     --display-amber: #ffb14a;
+    --display-amber-rgb: 255,177,74;
+    --keybed-bg: #c4bca7;
+    --shadow-rgb: 60,50,30;
+    --accent-shadow-rgb: 60,20,5;
+    --led-lit: #ffe6a0;
+    --led-lit-rgb: 255,203,110;
+    --key-black-shadow: #1a1815;
+    --key-white-name: #b1a98a;
+    --key-white-hint: #cfc7ad;
+    --key-black-name: #8d8878;
+    --key-down-white-top: #ffe9d9;
+    --key-down-white-bot: #ffd9c2;
+    --key-down-black-top: #5d5548;
+    --key-down-black-bot: #3d3931;
+    --mini-key-white: #3a352b;
+    --mini-key-black: #17140f;
+    --hist-hint: #a08a5c;
+    --hist-empty: #4a4436;
+    --hist-lit: #ffcf8e;
+    --dot-error: #b0392b;
+    --accent-active-top: #e2461f;
+    --accent-active-bot: #b8371a;
+    --gray-active-top: #efe9d8;
+    --gray-active-bot: #ddd5bf;
+    --radius-lg: 28px;
+    --radius-md: 12px;
+    --radius-sm: 7px;
     /* Page ground: always dark, regardless of OS theme. The instrument
        itself keeps its warm hardware colors above. */
     --page-bg: #211f1a;
@@ -33,6 +84,134 @@
     --page-text: #b8b09d;
     --page-text-dim: #8a8271;
     --device-shadow: rgba(0,0,0,0.55);
+  }
+
+  /* ---- Skin 2: Vintage Analog — a hardware synth that's seen 40 years of
+     studio use: aged/yellowed plastic, dimmer VFD-style amber, rust-orange
+     accent instead of punchy coral. Paired with a grain overlay below. ---- */
+  :root[data-skin="vintage"] {
+    --body-cream: #d9c8a0;
+    --body-cream-dark: #c1a978;
+    --panel-line: #a8916b;
+    --coral: #a8461f;
+    --coral-rgb: 168,70,31;
+    --coral-dark: #7a3015;
+    --coral-top: #c05a2c;
+    --coral-light: #cf7548;
+    --on-top: #8a3015;
+    --on-bot: #5e1f0c;
+    --ink: #3a2f1f;
+    --label: #8a7654;
+    --label-2: #96825c;
+    --sublabel: #8a6f45;
+    --key-white: #e6dab3;
+    --key-white-top: #f2e7c4;
+    --key-white-bot: #d2bd8c;
+    --key-white-border: #ad9868;
+    --key-white-shadow: #b8a273;
+    --key-black: #2c2013;
+    --key-black-top: #4a3a24;
+    --key-black-bot: #1c130a;
+    --btn-gray-top: #ecdfba;
+    --btn-gray-bot: #c9b688;
+    --btn-gray-shadow: #a08f61;
+    --btn-gray-border: #93805a;
+    --track-bg: #bba876;
+    --display-bg: #191309;
+    --display-amber: #e8934a;
+    --display-amber-rgb: 232,147,74;
+    --keybed-bg: #8f7c54;
+    --shadow-rgb: 40,26,8;
+    --accent-shadow-rgb: 40,15,3;
+    --led-lit: #f0c168;
+    --led-lit-rgb: 240,193,104;
+    --key-black-shadow: #120d06;
+    --key-white-name: #a3906a;
+    --key-white-hint: #c2ac7c;
+    --key-black-name: #8a7a56;
+    --key-down-white-top: #f0dcb0;
+    --key-down-white-bot: #ddc188;
+    --key-down-black-top: #5a4630;
+    --key-down-black-bot: #362818;
+    --mini-key-white: #3a301e;
+    --mini-key-black: #17110a;
+    --hist-hint: #9c824f;
+    --hist-empty: #453a26;
+    --hist-lit: #f0cf8a;
+    --dot-error: #a8462a;
+    --accent-active-top: #8a3015;
+    --accent-active-bot: #5e1f0c;
+    --gray-active-top: #e0d0a4;
+    --gray-active-bot: #c2ab79;
+    --page-bg: #1c1712;
+    --page-bg2: #2a2116;
+    --page-text: #c4b088;
+    --page-text-dim: #8c795a;
+    --device-shadow: rgba(20,12,0,0.6);
+  }
+
+  /* ---- Skin 3: Lo-Fi 8-Bit — chunky pixel-console vibes (BMO-inspired):
+     mint-teal shell, hot-pink accent, a GameBoy-green LCD, blockier
+     corners and a monospace face throughout. ---- */
+  :root[data-skin="lofi"] {
+    --body-cream: #8fd6c1;
+    --body-cream-dark: #5fb69a;
+    --panel-line: #3f8f76;
+    --coral: #ff5178;
+    --coral-rgb: 255,81,120;
+    --coral-dark: #c92e54;
+    --coral-top: #ff7a9a;
+    --coral-light: #ff9bb3;
+    --on-top: #c92e54;
+    --on-bot: #971f3c;
+    --ink: #163430;
+    --label: #1f4a42;
+    --label-2: #2a5a50;
+    --sublabel: #1f4a42;
+    --key-white: #eafff6;
+    --key-white-top: #ffffff;
+    --key-white-bot: #c4eeda;
+    --key-white-border: #6fc4ac;
+    --key-white-shadow: #5cae95;
+    --key-black: #123028;
+    --key-black-top: #1d4a3e;
+    --key-black-bot: #0a1c17;
+    --btn-gray-top: #eafff6;
+    --btn-gray-bot: #aee2cc;
+    --btn-gray-shadow: #4a9884;
+    --btn-gray-border: #3f8f78;
+    --track-bg: #6fc4ac;
+    --display-bg: #0f380f;
+    --display-amber: #9bbc0f;
+    --display-amber-rgb: 155,188,15;
+    --keybed-bg: #3f8f78;
+    --shadow-rgb: 8,32,26;
+    --accent-shadow-rgb: 60,10,25;
+    --led-lit: #c6f57a;
+    --led-lit-rgb: 198,245,122;
+    --key-black-shadow: #05120e;
+    --key-white-name: #4a9884;
+    --key-white-hint: #6fc4ac;
+    --key-black-name: #6fc4ac;
+    --key-down-white-top: #d0fff0;
+    --key-down-white-bot: #9ee8cc;
+    --key-down-black-top: #2a5a4c;
+    --key-down-black-bot: #123028;
+    --mini-key-white: #123028;
+    --mini-key-black: #05120e;
+    --hist-hint: #6fc4ac;
+    --hist-empty: #1a3a32;
+    --hist-lit: #c6f57a;
+    --dot-error: #ff5178;
+    --accent-active-top: #c92e54;
+    --accent-active-bot: #971f3c;
+    --gray-active-top: #d0fff0;
+    --gray-active-bot: #9ee8cc;
+    --page-bg: #0b1f1c;
+    --page-bg2: #123a32;
+    --page-text: #8fd8c4;
+    --page-text-dim: #4a8a76;
+    --device-shadow: rgba(0,20,15,0.6);
   }
 
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -63,8 +242,9 @@
   .orchid {
     width: min(920px, 100%);
     max-width: 100%; /* redundant safety net alongside the min() clamp above */
+    position: relative;
     background: linear-gradient(180deg, var(--body-cream), var(--body-cream-dark));
-    border-radius: 28px;
+    border-radius: var(--radius-lg);
     padding: 16px 22px 18px;
     box-shadow:
       0 2px 0 #fff inset,
@@ -96,10 +276,11 @@
     color: var(--ink);
   }
   .display {
+    position: relative;
     flex: 1 1 220px;
     min-width: 0; /* let it shrink below its nowrap chord-name content instead of forcing the row wider */
     background: var(--display-bg);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 10px 16px;
     display: flex;
     flex-direction: column;
@@ -111,13 +292,13 @@
   .display .chord-name {
     font-size: 30px;
     color: var(--display-amber);
-    text-shadow: 0 0 12px rgba(255,177,74,0.5);
+    text-shadow: 0 0 12px rgba(var(--display-amber-rgb),0.5);
     line-height: 1.1;
     white-space: nowrap;
   }
   .display .chord-notes {
     font-size: 11px;
-    color: #8f7a52;
+    color: var(--sublabel);
     letter-spacing: 0.15em;
     margin-top: 4px;
     white-space: nowrap;
@@ -132,14 +313,14 @@
   .mkey.white {
     flex: 1;
     min-width: 0;
-    background: #3a352b;
+    background: var(--mini-key-white);
     border-radius: 0 0 3px 3px;
     box-shadow: 0 1px 1px rgba(0,0,0,0.4) inset;
     transition: background 0.08s, box-shadow 0.08s;
   }
   .mkey.white.active {
     background: var(--display-amber);
-    box-shadow: 0 0 6px rgba(255,177,74,0.8);
+    box-shadow: 0 0 6px rgba(var(--display-amber-rgb),0.8);
   }
   .mini-black-row {
     position: absolute;
@@ -151,14 +332,14 @@
     position: absolute;
     width: 9%;
     height: 100%;
-    background: #17140f;
+    background: var(--mini-key-black);
     border-radius: 0 0 2px 2px;
     transform: translateX(-50%);
     transition: background 0.08s, box-shadow 0.08s;
   }
   .mkey.black.active {
     background: var(--display-amber);
-    box-shadow: 0 0 6px rgba(255,177,74,0.9);
+    box-shadow: 0 0 6px rgba(var(--display-amber-rgb),0.9);
   }
 
   .controls {
@@ -178,7 +359,7 @@
     font-size: 8.5px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #7d7663;
+    color: var(--label);
   }
   .ctl input[type=range] {
     -webkit-appearance: none;
@@ -191,25 +372,25 @@
   .ctl input[type=range]::-webkit-slider-runnable-track {
     height: 8px;
     border-radius: 4px;
-    background: #c9c1ac;
+    background: var(--track-bg);
     box-shadow: 0 1px 2px rgba(0,0,0,0.25) inset;
   }
   .ctl input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 20px; height: 20px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
-    border: 1px solid #b3ab95;
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
+    border: 1px solid var(--btn-gray-border);
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     margin-top: -6px;
   }
   .ctl input[type=range]::-moz-range-track {
-    height: 8px; border-radius: 4px; background: #c9c1ac;
+    height: 8px; border-radius: 4px; background: var(--track-bg);
   }
   .ctl input[type=range]::-moz-range-thumb {
     width: 20px; height: 20px; border-radius: 50%;
-    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
-    border: 1px solid #b3ab95;
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
+    border: 1px solid var(--btn-gray-border);
   }
 
   .stepper {
@@ -220,8 +401,8 @@
   .stepper button {
     width: 26px; height: 26px;
     border-radius: 50%;
-    border: 1px solid #b3ab95;
-    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    border: 1px solid var(--btn-gray-border);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
     font-size: 14px;
     font-weight: 700;
     color: var(--ink);
@@ -233,8 +414,8 @@
   .icon-btn {
     width: 26px; height: 26px;
     border-radius: 50%;
-    border: 1px solid #b3ab95;
-    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    border: 1px solid var(--btn-gray-border);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
     font-size: 12px;
     font-weight: 700;
     color: var(--ink);
@@ -257,7 +438,7 @@
     font-size: 8.5px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #97907e;
+    color: var(--label-2);
     margin: 9px 2px 5px;
   }
 
@@ -275,11 +456,11 @@
     letter-spacing: 0.1em;
     cursor: pointer;
     color: #fff;
-    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    background: linear-gradient(180deg, var(--coral-top), var(--coral));
     box-shadow:
       0 1px 0 rgba(255,255,255,0.4) inset,
       0 4px 0 var(--coral-dark),
-      0 6px 8px rgba(60,20,5,0.3);
+      0 6px 8px rgba(var(--accent-shadow-rgb),0.3);
     transition: transform 0.04s, box-shadow 0.04s, background 0.08s;
   }
   /* A little recessed LED, like a hardware switch's engaged light — lit
@@ -297,34 +478,34 @@
   }
   .obtn:active, .obtn.pressed, .obtn.active {
     transform: translateY(4px);
-    box-shadow: 0 0 0 var(--coral-dark), 0 1px 3px rgba(60,20,5,0.4) inset;
+    box-shadow: 0 0 0 var(--coral-dark), 0 1px 3px rgba(var(--accent-shadow-rgb),0.4) inset;
   }
   .obtn.active {
-    background: linear-gradient(180deg, #e2461f, #b8371a);
+    background: linear-gradient(180deg, var(--accent-active-top), var(--accent-active-bot));
   }
   .obtn.active::after {
-    background: #ffe6a0;
-    box-shadow: 0 0 5px 2px rgba(255,203,110,0.95), inset 0 0 2px rgba(255,255,255,0.8);
+    background: var(--led-lit);
+    box-shadow: 0 0 5px 2px rgba(var(--led-lit-rgb),0.95), inset 0 0 2px rgba(255,255,255,0.8);
   }
   .obtn.gray {
     color: var(--ink);
-    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
     box-shadow:
       0 1px 0 rgba(255,255,255,0.7) inset,
-      0 4px 0 #b7af99,
-      0 6px 8px rgba(60,50,30,0.25);
+      0 4px 0 var(--btn-gray-shadow),
+      0 6px 8px rgba(var(--shadow-rgb),0.25);
   }
   .obtn.gray::after { background: rgba(0,0,0,0.12); box-shadow: inset 0 1px 1px rgba(0,0,0,0.25); }
   .obtn.gray:active, .obtn.gray.pressed, .obtn.gray.active {
     transform: translateY(4px);
-    box-shadow: 0 0 0 #b7af99, 0 1px 3px rgba(60,50,30,0.35) inset;
+    box-shadow: 0 0 0 var(--btn-gray-shadow), 0 1px 3px rgba(var(--shadow-rgb),0.35) inset;
   }
   .obtn.gray.active {
-    background: linear-gradient(180deg, #efe9d8, #ddd5bf);
+    background: linear-gradient(180deg, var(--gray-active-top), var(--gray-active-bot));
   }
   .obtn.gray.active::after {
     background: var(--coral);
-    box-shadow: 0 0 5px 2px rgba(244,80,44,0.75), inset 0 0 2px rgba(255,255,255,0.5);
+    box-shadow: 0 0 5px 2px rgba(var(--coral-rgb),0.75), inset 0 0 2px rgba(255,255,255,0.5);
   }
   .obtn .kbd-hint {
     display: block;
@@ -350,14 +531,14 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     color: var(--ink);
-    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
-    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
+    box-shadow: 0 2px 0 var(--btn-gray-shadow), 0 3px 5px rgba(var(--shadow-rgb),0.2);
     cursor: pointer;
     white-space: nowrap;
   }
-  #midiOutBtn:active { transform: translateY(2px); box-shadow: 0 0 0 #b7af99, 0 1px 2px rgba(60,50,30,0.3) inset; }
+  #midiOutBtn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--btn-gray-shadow), 0 1px 2px rgba(var(--shadow-rgb),0.3) inset; }
   #midiOutBtn.active {
-    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    background: linear-gradient(180deg, var(--coral-top), var(--coral));
     color: #fff;
     box-shadow: 0 2px 0 var(--coral-dark), 0 3px 5px rgba(60,20,5,0.25);
   }
@@ -366,8 +547,8 @@
     font-size: 11px;
     padding: 6px 10px;
     border-radius: 8px;
-    border: 1px solid #b3ab95;
-    background: linear-gradient(180deg, #fdfaf2, #ded7c4);
+    border: 1px solid var(--btn-gray-border);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
     color: var(--ink);
     cursor: pointer;
     max-width: 220px;
@@ -378,17 +559,17 @@
     align-items: center;
     gap: 6px;
     font-size: 10px;
-    color: #7d7663;
+    color: var(--label);
     letter-spacing: 0.02em;
   }
   .midi-status .dot {
     width: 7px; height: 7px;
     border-radius: 50%;
-    background: #b3ab95;
+    background: var(--btn-gray-border);
     flex: none;
   }
-  .midi-status .dot.live { background: var(--coral); box-shadow: 0 0 6px rgba(244,80,44,0.6); }
-  .midi-status .dot.error { background: #b0392b; }
+  .midi-status .dot.live { background: var(--coral); box-shadow: 0 0 6px rgba(var(--coral-rgb),0.6); }
+  .midi-status .dot.error { background: var(--dot-error); }
   .midi-status .dot.flash { animation: midiflash 0.15s ease; }
   @keyframes midiflash { from { transform: scale(1.8); } to { transform: scale(1); } }
 
@@ -398,7 +579,7 @@
     height: 190px;
     margin-top: 8px;
     border-radius: 14px;
-    background: #c4bca7;
+    background: var(--keybed-bg);
     --keybed-pad: 8px;
     padding: var(--keybed-pad);
     box-shadow: 0 3px 8px rgba(0,0,0,0.25) inset;
@@ -414,10 +595,10 @@
   }
   .key.white {
     flex: 1;
-    background: linear-gradient(180deg, #fffdf6, var(--key-white) 60%, #eae4d4);
+    background: linear-gradient(180deg, var(--key-white-top), var(--key-white) 60%, var(--key-white-bot));
     border-radius: 0 0 9px 9px;
-    border: 1px solid #cfc7b2;
-    box-shadow: 0 4px 0 #d8d0bb, 0 6px 6px rgba(60,50,30,0.25);
+    border: 1px solid var(--key-white-border);
+    box-shadow: 0 4px 0 var(--key-white-shadow), 0 6px 6px rgba(var(--shadow-rgb),0.25);
     position: relative;
   }
   /* The end keys (C, B) sit in the keybed's own rounded corner slot, so
@@ -430,23 +611,23 @@
     text-align: center;
     font-size: 11px;
     font-weight: 600;
-    color: #b1a98a;
+    color: var(--key-white-name);
   }
   .key.white .hint {
     position: absolute;
     bottom: 26px; left: 0; right: 0;
     text-align: center;
     font-size: 8px;
-    color: #cfc7ad;
+    color: var(--key-white-hint);
   }
   .key.black {
     position: absolute;
     top: var(--keybed-pad); /* always matches .keybed's own padding, incl. mobile override */
     width: 7.5%;
     height: 58%;
-    background: linear-gradient(180deg, #4a463e, var(--key-black) 70%, #262420);
+    background: linear-gradient(180deg, var(--key-black-top), var(--key-black) 70%, var(--key-black-bot));
     border-radius: 0 0 7px 7px;
-    box-shadow: 0 4px 0 #1a1815, 0 6px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 0 var(--key-black-shadow), 0 6px 8px rgba(0,0,0,0.4);
     z-index: 2;
   }
   .key.black .keyname {
@@ -454,7 +635,7 @@
     bottom: 7px; left: 0; right: 0;
     text-align: center;
     font-size: 8.5px;
-    color: #8d8878;
+    color: var(--key-black-name);
   }
   /* Pressed feedback is color/shadow only, not a position shift: a black key
      overlaps the top corners of its neighboring white keys, and any vertical
@@ -462,12 +643,12 @@
      seam between white keys - color/shadow alone can't reveal anything since
      the key never leaves the spot it was covering. */
   .key.down.white {
-    background: linear-gradient(180deg, #ffe9d9, #ffd9c2);
-    box-shadow: 0 1px 0 #d8d0bb, 0 2px 3px rgba(60,50,30,0.25);
+    background: linear-gradient(180deg, var(--key-down-white-top), var(--key-down-white-bot));
+    box-shadow: 0 1px 0 var(--key-white-shadow), 0 2px 3px rgba(var(--shadow-rgb),0.25);
   }
   .key.down.black {
-    background: linear-gradient(180deg, #5d5548, #3d3931);
-    box-shadow: 0 1px 0 #1a1815, 0 2px 3px rgba(0,0,0,0.4);
+    background: linear-gradient(180deg, var(--key-down-black-top), var(--key-down-black-bot));
+    box-shadow: 0 1px 0 var(--key-black-shadow), 0 2px 3px rgba(0,0,0,0.4);
   }
 
   /* ---------- Strum plate ---------- */
@@ -477,7 +658,7 @@
     gap: 4px;
     height: 46px;
     border-radius: 12px;
-    background: #c4bca7;
+    background: var(--keybed-bg);
     padding: 6px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.25) inset;
     touch-action: none;
@@ -486,7 +667,7 @@
   .strum .seg {
     flex: 1;
     border-radius: 7px;
-    background: linear-gradient(180deg, #ff8763, #f4502c);
+    background: linear-gradient(180deg, var(--coral-light), var(--coral));
     box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 3px 0 var(--coral-dark);
     display: flex;
     align-items: flex-end;
@@ -521,13 +702,13 @@
     font-size: 8.5px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #7d7663;
+    color: var(--label);
   }
   #playBtn {
     width: 26px; height: 26px;
     border-radius: 50%;
     border: 1px solid var(--coral-dark);
-    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    background: linear-gradient(180deg, var(--coral-top), var(--coral));
     color: #fff;
     font-size: 10px;
     cursor: pointer;
@@ -537,8 +718,8 @@
   }
   #playBtn:active { transform: translateY(1px); box-shadow: 0 1px 1px rgba(0,0,0,0.25) inset; }
   #playBtn.on {
-    background: linear-gradient(180deg, #c23c1c, #9c2f16);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.35) inset, 0 0 8px 2px rgba(244,80,44,0.7);
+    background: linear-gradient(180deg, var(--on-top), var(--on-bot));
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35) inset, 0 0 8px 2px rgba(var(--coral-rgb),0.7);
   }
   #midiBtn {
     padding: 7px 14px;
@@ -548,11 +729,11 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     color: var(--ink);
-    background: linear-gradient(180deg, #fdfaf2, #ddd6c2);
-    box-shadow: 0 2px 0 #b7af99, 0 3px 5px rgba(60,50,30,0.2);
+    background: linear-gradient(180deg, var(--btn-gray-top), var(--btn-gray-bot));
+    box-shadow: 0 2px 0 var(--btn-gray-shadow), 0 3px 5px rgba(var(--shadow-rgb),0.2);
     cursor: grab;
   }
-  #midiBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 #b7af99; cursor: grabbing; }
+  #midiBtn:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--btn-gray-shadow); cursor: grabbing; }
   #midiBtn.disabled { opacity: 0.45; cursor: default; }
   .history {
     display: flex;
@@ -588,22 +769,22 @@
     justify-content: center;
     width: 22px;
     height: 22px;
-    background: rgba(255,177,74,0.10);
+    background: rgba(var(--display-amber-rgb),0.10);
     border: none;
     border-radius: 6px;
     padding: 0;
-    color: #a08a5c;
+    color: var(--hist-hint);
     font-size: 11px;
     line-height: 1;
     cursor: pointer;
     touch-action: manipulation;
   }
-  .history .hinv button:hover { color: var(--display-amber); background: rgba(255,177,74,0.18); }
-  .history .hinv button:active { transform: translateY(1px); background: rgba(255,177,74,0.25); }
+  .history .hinv button:hover { color: var(--display-amber); background: rgba(var(--display-amber-rgb),0.18); }
+  .history .hinv button:active { transform: translateY(1px); background: rgba(var(--display-amber-rgb),0.25); }
   .history .hname {
     font-size: 17px;
     color: var(--display-amber);
-    text-shadow: 0 0 10px rgba(255,177,74,0.4);
+    text-shadow: 0 0 10px rgba(var(--display-amber-rgb),0.4);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -611,7 +792,7 @@
   }
   .history .hnotes {
     font-size: 9px;
-    color: #8f7a52;
+    color: var(--sublabel);
     letter-spacing: 0.1em;
     margin-top: 2px;
     white-space: nowrap;
@@ -619,26 +800,33 @@
     text-overflow: ellipsis;
   }
   .history .hcell.empty {
-    color: #4a4436;
+    color: var(--hist-empty);
     font-size: 17px;
     line-height: 1.15;
   }
   .history .hcell.playable { cursor: pointer; }
   .history .hcell.playable:hover .hname {
-    text-shadow: 0 0 14px rgba(255,177,74,0.75);
+    text-shadow: 0 0 14px rgba(var(--display-amber-rgb),0.75);
   }
   .history .hcell.lit .hname {
-    color: #ffcf8e;
-    text-shadow: 0 0 18px rgba(255,177,74,0.95);
+    color: var(--hist-lit);
+    text-shadow: 0 0 18px rgba(var(--display-amber-rgb),0.95);
   }
 
   .version {
     margin-top: 10px;
     text-align: center;
-    font-size: 13px;
+  }
+  .version span {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(var(--shadow-rgb),0.08);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 1px 2px rgba(var(--shadow-rgb),0.15);
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--display-amber);
+    letter-spacing: 0.08em;
+    color: var(--label);
     font-family: "SF Mono", Menlo, Consolas, monospace;
   }
 
@@ -680,6 +868,45 @@
     color: var(--ink);
     cursor: pointer;
   }
+  .settings-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .skin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .skin-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(43,40,35,0.05);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+  }
+  .skin-card:hover { background: rgba(43,40,35,0.09); }
+  .skin-card.active { border-color: var(--coral); background: rgba(var(--coral-rgb),0.1); }
+  .skin-swatch {
+    width: 54px; height: 40px;
+    border-radius: 8px;
+    flex: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .swatch-classic { background: linear-gradient(135deg, #f3eee3 0%, #f3eee3 38%, #f4502c 38%, #f4502c 66%, #1d1b17 66%, #1d1b17 100%); }
+  .swatch-vintage { background: linear-gradient(135deg, #d9c8a0 0%, #d9c8a0 38%, #a8461f 38%, #a8461f 66%, #191309 66%, #191309 100%); }
+  .swatch-lofi { background: linear-gradient(135deg, #8fd6c1 0%, #8fd6c1 38%, #ff5178 38%, #ff5178 66%, #0f380f 66%, #0f380f 100%); }
+  .skin-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .skin-name { font-weight: 700; font-size: 13px; letter-spacing: 0.03em; }
+  .skin-desc { font-size: 11px; opacity: 0.7; }
   #installBtn {
     margin-top: 12px;
     padding: 9px 22px;
@@ -690,11 +917,81 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #fff;
-    background: linear-gradient(180deg, #ff6a44, var(--coral));
+    background: linear-gradient(180deg, var(--coral-top), var(--coral));
     box-shadow: 0 3px 0 var(--coral-dark), 0 5px 8px rgba(60,20,5,0.3);
     cursor: pointer;
   }
   #installBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--coral-dark); }
+
+  /* ---- Vintage Analog: a subtle dust/grain texture over the whole shell,
+     like decades of studio use, plus a couple of "screws" in the corners
+     for that hand-built-hardware feel. ---- */
+  [data-skin="vintage"] .orchid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 12% 22%, rgba(0,0,0,0.06) 0, transparent 1.5px),
+      radial-gradient(circle at 68% 58%, rgba(0,0,0,0.05) 0, transparent 1.5px),
+      radial-gradient(circle at 38% 78%, rgba(0,0,0,0.06) 0, transparent 1.5px),
+      radial-gradient(circle at 85% 18%, rgba(0,0,0,0.05) 0, transparent 1.5px),
+      radial-gradient(circle at 92% 82%, rgba(0,0,0,0.05) 0, transparent 1.5px),
+      radial-gradient(circle at 25% 45%, rgba(0,0,0,0.04) 0, transparent 1px),
+      linear-gradient(180deg, rgba(0,0,0,0.04), transparent 45%);
+    background-size: 38px 38px, 52px 52px, 33px 33px, 58px 58px, 44px 44px, 26px 26px, 100% 100%;
+    mix-blend-mode: multiply;
+  }
+  [data-skin="vintage"] .orchid::after {
+    content: "";
+    position: absolute;
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border-radius: calc(var(--radius-lg) - 8px);
+    pointer-events: none;
+    box-shadow:
+      12px 12px 0 -11px rgba(0,0,0,0.35),
+      calc(100% - 12px) 12px 0 -11px rgba(0,0,0,0.35),
+      12px calc(100% - 12px) 0 -11px rgba(0,0,0,0.35),
+      calc(100% - 12px) calc(100% - 12px) 0 -11px rgba(0,0,0,0.35);
+    border: 2px solid rgba(0,0,0,0.06);
+  }
+
+  /* ---- Lo-Fi 8-Bit: blockier corners, a monospace face, and a scanline
+     sweep over the LCD for that low-res console feel. ---- */
+  [data-skin="lofi"] body { font-family: "SF Mono", "Courier New", Menlo, monospace; }
+  [data-skin="lofi"] .orchid { border-radius: 10px; }
+  [data-skin="lofi"] .display,
+  [data-skin="lofi"] .obtn,
+  [data-skin="lofi"] .keybed,
+  [data-skin="lofi"] .strum,
+  [data-skin="lofi"] .strum .seg,
+  [data-skin="lofi"] .history,
+  [data-skin="lofi"] .icon-btn,
+  [data-skin="lofi"] .stepper button,
+  [data-skin="lofi"] #midiOutBtn,
+  [data-skin="lofi"] #midiPortSelect,
+  [data-skin="lofi"] #midiBtn,
+  [data-skin="lofi"] #playBtn,
+  [data-skin="lofi"] .help-panel,
+  [data-skin="lofi"] .settings-panel,
+  [data-skin="lofi"] .help-close,
+  [data-skin="lofi"] #installBtn { border-radius: 4px; }
+  [data-skin="lofi"] .key.white,
+  [data-skin="lofi"] .key.white:first-child,
+  [data-skin="lofi"] .key.white:last-child { border-radius: 0 0 3px 3px; }
+  [data-skin="lofi"] .key.black { border-radius: 0 0 2px 2px; }
+  [data-skin="lofi"] .mkey.white,
+  [data-skin="lofi"] .mkey.black { border-radius: 0 0 1px 1px; }
+  [data-skin="lofi"] .display::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px
+    );
+  }
 
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
@@ -784,6 +1081,7 @@
           <button id="octUp" title="Octave up">+</button>
         </div>
       </div>
+      <button id="settingsBtn" class="icon-btn" title="Appearance">&#9881;</button>
       <button id="helpBtn" class="icon-btn" title="Help &amp; keyboard shortcuts">?</button>
     </div>
   </div>
@@ -856,7 +1154,7 @@
     <div class="history" id="history"></div>
   </div>
 
-  <div class="version">Inspiration Machine v2026-07-27.1</div>
+  <div class="version"><span>Inspiration Machine v2026-07-30.1</span></div>
 </div>
 
 <div class="help-overlay" id="helpOverlay" hidden>
@@ -872,6 +1170,36 @@
     <br><br>Works offline once installed. On iPhone: Share&nbsp;&rarr;&nbsp;Add&nbsp;to&nbsp;Home&nbsp;Screen.<br>
     <button id="installBtn" hidden>Install as app</button>
     <!-- pwa:end -->
+  </div>
+</div>
+
+<div class="help-overlay" id="settingsOverlay" hidden>
+  <div class="help-panel settings-panel">
+    <button class="help-close" id="settingsClose" aria-label="Close">&times;</button>
+    <div class="settings-title">Appearance</div>
+    <div class="skin-grid">
+      <button class="skin-card" data-skin="classic">
+        <span class="skin-swatch swatch-classic"></span>
+        <span class="skin-info">
+          <span class="skin-name">Classic</span>
+          <span class="skin-desc">The default cream &amp; coral look.</span>
+        </span>
+      </button>
+      <button class="skin-card" data-skin="vintage">
+        <span class="skin-swatch swatch-vintage"></span>
+        <span class="skin-info">
+          <span class="skin-name">Vintage Analog</span>
+          <span class="skin-desc">Worn hardware, aged plastic, dim amber glow.</span>
+        </span>
+      </button>
+      <button class="skin-card" data-skin="lofi">
+        <span class="skin-swatch swatch-lofi"></span>
+        <span class="skin-info">
+          <span class="skin-name">Lo-Fi 8-Bit</span>
+          <span class="skin-desc">Chunky, pixel-console vibes.</span>
+        </span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1959,6 +2287,25 @@
   $("#helpClose").addEventListener("click", () => { helpOverlay.hidden = true; });
   helpOverlay.addEventListener("click", (e) => { if (e.target === helpOverlay) helpOverlay.hidden = true; });
   addEventListener("keydown", (e) => { if (e.key === "Escape" && !helpOverlay.hidden) helpOverlay.hidden = true; });
+
+  /* --- Appearance (skins) --- */
+  const settingsOverlay = $("#settingsOverlay");
+  $("#settingsBtn").addEventListener("click", () => { settingsOverlay.hidden = false; });
+  $("#settingsClose").addEventListener("click", () => { settingsOverlay.hidden = true; });
+  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) settingsOverlay.hidden = true; });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !settingsOverlay.hidden) settingsOverlay.hidden = true; });
+
+  function applySkin(skin) {
+    document.documentElement.dataset.skin = skin;
+    try { localStorage.setItem("im-skin", skin); } catch {}
+    document.querySelectorAll(".skin-card").forEach((c) => {
+      c.classList.toggle("active", c.dataset.skin === skin);
+    });
+  }
+  document.querySelectorAll(".skin-card").forEach((c) => {
+    c.addEventListener("click", () => applySkin(c.dataset.skin));
+  });
+  applySkin(document.documentElement.dataset.skin || "classic");
 
   /* --- Strum plate --- */
   const strumEl = $("#strum");
