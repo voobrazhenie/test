@@ -351,6 +351,92 @@
     --radius-sm: 3px;
   }
 
+  /* ---- Skin 6: Chord Chart ------------------------------------------
+     DIRECTION CONTRACT (seed 8bce5fcb · roll ran degraded, no challengers)
+     THESIS: the instrument is a working chart you play, not a device you
+       operate. Refuses the category's near-black-plus-neon rack panel and
+       the cream/serif/terracotta that Classic and Vintage already spend.
+     OWN-WORLD: two-plate instructional print off a music-shop chord poster
+       — ink rules and condensed caps on cool stock, one saturated
+       ultramarine as the second plate, chord tones as filled dots, no
+       shadow and no glow anywhere.
+     STORY: a songwriter finds a progression by ear and sees it printed.
+     FIRST VIEWPORT: header cell carries the chord name in large condensed
+       caps beside a keyboard diagram at hero scale; control rows are ruled,
+       separately labelled cells; history is blank chart cells to fill.
+     FORM: candidate 5 of the grounded list (music-shop chord wall chart).
+     FINISH: unreviewed and undocumented is unfinished; this build ends with
+       the finish review, the verdict, and DESIGN.md.
+     Engaged always means MORE ink, never less — the inversion the critique
+     found, made into the skin's organising rule. -------------------- */
+  :root[data-skin="chart"] {
+    --body-cream: #f2f0ea;
+    --body-cream-dark: #f2f0ea;
+    --panel-line: #12120f;
+    --coral: #1f35c4;
+    --coral-rgb: 31,53,196;
+    --coral-dark: #12120f;
+    --coral-top: #1f35c4;
+    --coral-light: #1f35c4;
+    --on-top: #16279a;
+    --on-bot: #16279a;
+    --ink: #12120f;
+    --label: #12120f;
+    --label-2: #12120f;
+    --sublabel: #3b3a33;
+    --key-white: #fbfaf6;
+    --key-white-top: #fbfaf6;
+    --key-white-bot: #fbfaf6;
+    --key-white-border: #12120f;
+    --key-white-shadow: transparent;
+    --key-black: #12120f;
+    --key-black-top: #12120f;
+    --key-black-bot: #12120f;
+    --btn-gray-top: #f2f0ea;
+    --btn-gray-bot: #f2f0ea;
+    --btn-gray-shadow: transparent;
+    --btn-gray-border: #12120f;
+    --track-bg: #fbfaf6;
+    --display-bg: #fbfaf6;
+    --display-amber: #1f35c4;
+    --display-amber-rgb: 31,53,196;
+    --keybed-bg: #c8c4b8;
+    --shadow-rgb: 18,18,15;
+    --accent-shadow-rgb: 18,18,15;
+    --led-lit: #1f35c4;
+    --led-lit-rgb: 31,53,196;
+    --key-black-shadow: transparent;
+    --key-white-name: #12120f;
+    --key-white-hint: #6b6a61;
+    --key-black-name: #f2f0ea;
+    --key-down-white-top: #1f35c4;
+    --key-down-white-bot: #1f35c4;
+    --key-down-black-top: #1f35c4;
+    --key-down-black-bot: #1f35c4;
+    --mini-key-white: #e4e1d8;
+    --mini-key-black: #12120f;
+    --hist-hint: #3b3a33;
+    --hist-empty: #b5b1a5;
+    --hist-lit: #1f35c4;
+    --dot-error: #b3261e;
+    --accent-active-top: #1f35c4;
+    --accent-active-bot: #1f35c4;
+    --gray-active-top: #1f35c4;
+    --gray-active-bot: #1f35c4;
+    --page-bg: #1c30b0;
+    --page-bg2: #1c30b0;
+    --page-text: #f2f0ea;
+    --page-text-dim: #c3c9ee;
+    --device-shadow: rgba(0,0,0,0.35);
+    --radius-lg: 2px;
+    --radius-md: 0px;
+    --radius-sm: 0px;
+    --rule: #12120f;
+    --rule-hair: #c8c4b8;
+    --paper: #f2f0ea;
+    --paper-bright: #fbfaf6;
+  }
+
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
 
   html, body {
@@ -1043,6 +1129,7 @@
   .swatch-lofi { background: linear-gradient(135deg, #8fd6c1 0%, #8fd6c1 38%, #ff5178 38%, #ff5178 66%, #0f380f 66%, #0f380f 100%); }
   .swatch-fieldunit { background: linear-gradient(135deg, #a6ab8a 0%, #a6ab8a 38%, #a8433a 38%, #a8433a 66%, #0d1a0d 66%, #0d1a0d 100%); }
   .swatch-brutal { background: linear-gradient(135deg, #ffd60a 0%, #ffd60a 38%, #00c2cb 38%, #00c2cb 66%, #000 66%, #000 100%); }
+  .swatch-chart { background: linear-gradient(135deg, #f2f0ea 0%, #f2f0ea 38%, #1f35c4 38%, #1f35c4 66%, #12120f 66%, #12120f 100%); }
   .skin-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .skin-name { font-weight: 700; font-size: 13px; letter-spacing: 0.03em; }
   .skin-desc { font-size: 11px; opacity: 0.7; }
@@ -1551,6 +1638,362 @@
   [data-skin="brutal"] .skin-card.active { background: var(--coral); }
   [data-skin="brutal"] .skin-swatch { border: var(--stroke) solid #000; border-radius: 0; box-shadow: none; }
 
+  /* ================= Chord Chart =================
+     Ink and rules only. No shadow on any control, no glow anywhere — a
+     plate either printed or it didn't. Depth comes from rule weight. */
+  [data-skin="chart"] {
+    --rule-w: 2px;
+    --rule-heavy: 3px;
+    /* Condensed workhorse stack. A self-hosted face would be better, but
+       the offline-PWA constraint rules out fetching one and the file has
+       no licensed font to embed — so this is a disclosed compromise. */
+    --face-display: "Helvetica Neue Condensed", "HelveticaNeue-CondensedBold",
+                    "Arial Narrow", "Liberation Sans Narrow", Helvetica, Arial, sans-serif;
+  }
+  [data-skin="chart"] body { font-family: Helvetica, Arial, sans-serif; }
+
+  /* The chart itself: paper pinned on an ultramarine wall. */
+  [data-skin="chart"] .orchid {
+    background: var(--paper);
+    border: var(--rule-heavy) solid var(--rule);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.32);
+  }
+  [data-skin="chart"] .brand .logo {
+    font-family: var(--face-display);
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  /* Headings sit on the rule they label, with air above and less below. */
+  [data-skin="chart"] .section-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 8px 0 3px;
+    font-family: var(--face-display);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    color: var(--rule);
+  }
+  [data-skin="chart"] .section-label::after {
+    content: "";
+    flex: 1;
+    height: 0;
+    border-top: var(--rule-w) solid var(--rule);
+  }
+
+  /* Controls are chart cells. Rest = paper. Engaged = flooded plate with a
+     knocked-out label. Nothing moves; the ink is the feedback. */
+  [data-skin="chart"] .obtn {
+    background: var(--paper-bright);
+    border: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--rule);
+    font-family: var(--face-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-shadow: none;
+    padding: 8px 0;
+    transition: background 0.06s, color 0.06s;
+  }
+  /* Eight cells share this row, so its labels are the only ones that reach
+     the corner mark — size them down to clear it. */
+  [data-skin="chart"] #engineRow .obtn { font-size: 11px; letter-spacing: 0.03em; }
+  [data-skin="chart"] .obtn:active,
+  [data-skin="chart"] .obtn.pressed,
+  [data-skin="chart"] .obtn.active,
+  [data-skin="chart"] .obtn.gray:active,
+  [data-skin="chart"] .obtn.gray.pressed,
+  [data-skin="chart"] .obtn.gray.active {
+    transform: none;
+    box-shadow: none;
+    background: var(--coral);
+    color: var(--paper-bright);
+  }
+  /* The marks that separate a radio from a latch: engines get a hollow
+     ring, modes get a hollow square, and both flood on engage. */
+  [data-skin="chart"] .obtn::after {
+    top: 6px; right: 6px;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid var(--rule);
+    box-shadow: none;
+  }
+  [data-skin="chart"] #engineRow .obtn:not(.gray)::after,
+  [data-skin="chart"] #qualityRow .obtn::after,
+  [data-skin="chart"] #extRow .obtn::after { border-radius: 0; }
+  [data-skin="chart"] .obtn:active::after,
+  [data-skin="chart"] .obtn.pressed::after,
+  [data-skin="chart"] .obtn.active::after,
+  [data-skin="chart"] .obtn.gray:active::after,
+  [data-skin="chart"] .obtn.gray.pressed::after,
+  [data-skin="chart"] .obtn.gray.active::after {
+    background: var(--paper-bright);
+    border-color: var(--paper-bright);
+    box-shadow: none;
+  }
+  [data-skin="chart"] .obtn .kbd-hint { opacity: 1; color: inherit; font-weight: 400; }
+
+  /* Header cell: the chord printed large, with the keyboard diagram as the
+     hero mark rather than a thumbnail. */
+  [data-skin="chart"] .display {
+    background: var(--paper-bright);
+    border: var(--rule-heavy) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 7px 14px;
+  }
+  [data-skin="chart"] .display .chord-name {
+    font-family: var(--face-display);
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--rule);
+    text-shadow: none;
+  }
+  [data-skin="chart"] .display .chord-notes {
+    font-family: var(--face-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--sublabel);
+  }
+  /* The chord diagram is the hero mark of this world, so it gets figure
+     scale and a printed frame rather than the default thumbnail strip. */
+  [data-skin="chart"] .mini-keys {
+    height: 40px;
+    max-width: 244px;
+    margin-top: 6px;
+    border: 2px solid var(--rule);
+  }
+  [data-skin="chart"] .mini-white-row { gap: 0; }
+  [data-skin="chart"] .mkey.white {
+    background: var(--paper-bright);
+    border: 0;
+    border-right: 1.5px solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  [data-skin="chart"] .mini-white-row .mkey.white:last-child { border-right: 0; }
+  [data-skin="chart"] .mkey.black {
+    background: var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    width: 6.5%;
+    height: 58%;
+  }
+  /* A chord tone is a printed dot, not a lit key: the dot sits in the
+     exposed lower part of a white key, clear of the black-key overlay. */
+  [data-skin="chart"] .mkey.white.active {
+    box-shadow: none;
+    background:
+      radial-gradient(circle at 50% 78%, var(--coral) 0 5px, transparent 5px),
+      var(--paper-bright);
+  }
+  [data-skin="chart"] .mkey.black.active {
+    box-shadow: none;
+    background:
+      radial-gradient(circle at 50% 68%, var(--paper-bright) 0 3.5px, transparent 3.5px),
+      var(--coral);
+  }
+
+  /* Keybed, strum and history: same plate, hairline internal rules. */
+  [data-skin="chart"] .keybed,
+  [data-skin="chart"] .strum,
+  [data-skin="chart"] .history {
+    background: var(--paper-bright);
+    border: var(--rule-heavy) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  [data-skin="chart"] .keybed { --keybed-pad: 0px; padding: 0; }
+  [data-skin="chart"] .white-keys { gap: 0; }
+  [data-skin="chart"] .key.white,
+  [data-skin="chart"] .key.white:first-child,
+  [data-skin="chart"] .key.white:last-child {
+    border: 0;
+    border-right: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  [data-skin="chart"] .white-keys .key.white:last-child { border-right: 0; }
+  [data-skin="chart"] .key.black {
+    border-radius: 0;
+    box-shadow: none;
+    border: var(--rule-w) solid var(--rule);
+    border-top: 0;
+  }
+  [data-skin="chart"] .key.white .keyname,
+  [data-skin="chart"] .key.white .hint {
+    font-family: var(--face-display);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  [data-skin="chart"] .key.down.white,
+  [data-skin="chart"] .key.down.black { box-shadow: none; }
+  [data-skin="chart"] .key.down.white .keyname,
+  [data-skin="chart"] .key.down.white .hint { color: var(--paper-bright); }
+
+  [data-skin="chart"] .strum { padding: 0; gap: 0; }
+  [data-skin="chart"] .strum .seg {
+    background: var(--paper-bright);
+    border: 0;
+    border-right: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--rule);
+    font-family: var(--face-display);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  [data-skin="chart"] .strum .seg:last-child { border-right: 0; }
+  [data-skin="chart"] .strum .seg.lit {
+    filter: none;
+    transform: none;
+    background: var(--coral);
+    color: var(--paper-bright);
+  }
+
+  /* Empty history reads as blank cells waiting to be filled, not a void. */
+  [data-skin="chart"] .history { padding: 0; gap: 0; }
+  [data-skin="chart"] .history .hcell {
+    padding: 7px 10px;
+    border-right: 1px dashed var(--rule-hair);
+  }
+  [data-skin="chart"] .history .hcell:last-child { border-right: 0; }
+  [data-skin="chart"] .history .hname,
+  [data-skin="chart"] .history .hcell.empty {
+    font-family: var(--face-display);
+    font-weight: 700;
+    text-shadow: none;
+  }
+  [data-skin="chart"] .history .hcell.playable:hover .hname,
+  [data-skin="chart"] .history .hcell.lit .hname { text-shadow: none; color: var(--coral); }
+  [data-skin="chart"] .history .hinv button {
+    background: transparent;
+    border: 1.5px solid var(--rule);
+    border-radius: 0;
+    color: var(--rule);
+  }
+  [data-skin="chart"] .history .hinv button:hover { background: var(--coral); color: var(--paper-bright); border-color: var(--coral); }
+
+  /* Small controls: printed boxes, never chrome. */
+  [data-skin="chart"] .stepper button,
+  [data-skin="chart"] .icon-btn,
+  [data-skin="chart"] #playBtn,
+  [data-skin="chart"] #midiOutBtn,
+  [data-skin="chart"] #midiBtn,
+  [data-skin="chart"] #midiPortSelect,
+  [data-skin="chart"] #installBtn {
+    background: var(--paper-bright);
+    border: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+    color: var(--rule);
+    box-shadow: none;
+    font-family: var(--face-display);
+    font-weight: 700;
+  }
+  [data-skin="chart"] .stepper button:active,
+  [data-skin="chart"] .icon-btn:active,
+  [data-skin="chart"] #playBtn:active,
+  [data-skin="chart"] #midiOutBtn:active,
+  [data-skin="chart"] #midiBtn:active,
+  [data-skin="chart"] #installBtn:active {
+    transform: none;
+    background: var(--coral);
+    color: var(--paper-bright);
+    box-shadow: none;
+  }
+  [data-skin="chart"] #playBtn.on,
+  [data-skin="chart"] #midiOutBtn.active {
+    background: var(--coral);
+    color: var(--paper-bright);
+    box-shadow: none;
+  }
+  [data-skin="chart"] .stepper .value {
+    font-family: var(--face-display);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--rule);
+  }
+  [data-skin="chart"] .ctl label,
+  [data-skin="chart"] .bpm-tag,
+  [data-skin="chart"] .midi-status {
+    font-family: var(--face-display);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--rule);
+  }
+  [data-skin="chart"] .midi-status .dot { border-radius: 0; border: 1.5px solid var(--rule); box-shadow: none; }
+  [data-skin="chart"] .ctl input[type=range]::-webkit-slider-runnable-track {
+    height: 12px; border: var(--rule-w) solid var(--rule); border-radius: 0;
+    background: var(--paper-bright); box-shadow: none;
+  }
+  [data-skin="chart"] .ctl input[type=range]::-webkit-slider-thumb {
+    width: 14px; height: 20px; border-radius: 0;
+    border: var(--rule-w) solid var(--rule); background: var(--coral);
+    box-shadow: none; margin-top: -6px;
+  }
+  [data-skin="chart"] .ctl input[type=range]::-moz-range-track {
+    height: 12px; border: var(--rule-w) solid var(--rule); border-radius: 0; background: var(--paper-bright);
+  }
+  [data-skin="chart"] .ctl input[type=range]::-moz-range-thumb {
+    width: 14px; height: 20px; border-radius: 0;
+    border: var(--rule-w) solid var(--rule); background: var(--coral);
+  }
+
+  /* The chart's own printed footer line. */
+  [data-skin="chart"] .version { margin-top: 4px; }
+  [data-skin="chart"] .version span {
+    background: transparent;
+    border: 0;
+    border-top: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 5px 0 0;
+    font-family: var(--face-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--rule);
+    text-shadow: none;
+  }
+
+  /* This world can carry a real focus mark, so it gets one. */
+  [data-skin="chart"] :focus-visible {
+    outline: var(--rule-heavy) solid var(--coral);
+    outline-offset: 2px;
+  }
+
+  [data-skin="chart"] .help-panel,
+  [data-skin="chart"] .settings-panel {
+    background: var(--paper);
+    border: var(--rule-heavy) solid var(--rule);
+    border-radius: 0;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.4);
+  }
+  [data-skin="chart"] .help-close,
+  [data-skin="chart"] .skin-card {
+    background: var(--paper-bright);
+    border: var(--rule-w) solid var(--rule);
+    border-radius: 0;
+  }
+  [data-skin="chart"] .skin-card.active { background: var(--coral); color: var(--paper-bright); }
+  [data-skin="chart"] .skin-swatch { border: var(--rule-w) solid var(--rule); border-radius: 0; box-shadow: none; }
+  [data-skin="chart"] .settings-title,
+  [data-skin="chart"] .skin-name {
+    font-family: var(--face-display);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
     body { padding: 10px 6px 14px; }
@@ -1781,6 +2224,13 @@
         <span class="skin-info">
           <span class="skin-name">Neo-Brutal</span>
           <span class="skin-desc">Thick black strokes, hard shadows, loud flat blocks.</span>
+        </span>
+      </button>
+      <button class="skin-card" data-skin="chart">
+        <span class="skin-swatch swatch-chart"></span>
+        <span class="skin-info">
+          <span class="skin-name">Chord Chart</span>
+          <span class="skin-desc">Two-plate instructional print. Engaged means more ink.</span>
         </span>
       </button>
     </div>
