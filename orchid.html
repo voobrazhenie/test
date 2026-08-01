@@ -283,6 +283,74 @@
     --rail-w: 18px;
   }
 
+  /* ---- Skin 5: Neo-Brutal — paper stock on a loud yellow ground, thick
+     black strokes, hard un-blurred offset shadows and flat saturated
+     blocks. Every gradient is flattened by setting each pair of stops to
+     the same colour, so the shared rules render as solid fills. ---- */
+  :root[data-skin="brutal"] {
+    --body-cream: #f7f3e3;
+    --body-cream-dark: #f7f3e3;
+    --panel-line: #000;
+    --coral: #00c2cb;
+    --coral-rgb: 0,194,203;
+    --coral-dark: #000;
+    --coral-top: #00c2cb;
+    --coral-light: #00c2cb;
+    --on-top: #000;
+    --on-bot: #000;
+    --ink: #000;
+    --label: #000;
+    --label-2: #000;
+    --sublabel: #00c2cb;
+    --key-white: #fff;
+    --key-white-top: #fff;
+    --key-white-bot: #fff;
+    --key-white-border: #000;
+    --key-white-shadow: #000;
+    --key-black: #000;
+    --key-black-top: #000;
+    --key-black-bot: #000;
+    --btn-gray-top: #fff;
+    --btn-gray-bot: #fff;
+    --btn-gray-shadow: #000;
+    --btn-gray-border: #000;
+    --track-bg: #fff;
+    --display-bg: #000;
+    --display-amber: #00c2cb;
+    --display-amber-rgb: 0,194,203;
+    --keybed-bg: #cfcaba;
+    --shadow-rgb: 0,0,0;
+    --accent-shadow-rgb: 0,0,0;
+    --led-lit: #ffd700;
+    --led-lit-rgb: 255,215,0;
+    --key-black-shadow: #000;
+    --key-white-name: #000;
+    --key-white-hint: #7a7a7a;
+    --key-black-name: #fff;
+    --key-down-white-top: #ffd700;
+    --key-down-white-bot: #ffd700;
+    --key-down-black-top: #00c2cb;
+    --key-down-black-bot: #00c2cb;
+    --mini-key-white: #4a4a4a;
+    --mini-key-black: #000;
+    --hist-hint: #00c2cb;
+    --hist-empty: #3a3a3a;
+    --hist-lit: #ffd700;
+    --dot-error: #ff2e88;
+    --accent-active-top: #000;
+    --accent-active-bot: #000;
+    --gray-active-top: #000;
+    --gray-active-bot: #000;
+    --page-bg: #ffd60a;
+    --page-bg2: #ffd60a;
+    --page-text: #000;
+    --page-text-dim: #000;
+    --device-shadow: #000;
+    --radius-lg: 6px;
+    --radius-md: 4px;
+    --radius-sm: 3px;
+  }
+
   * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
 
   html, body {
@@ -974,6 +1042,7 @@
   .swatch-vintage { background: linear-gradient(135deg, #d9c8a0 0%, #d9c8a0 38%, #a8461f 38%, #a8461f 66%, #191309 66%, #191309 100%); }
   .swatch-lofi { background: linear-gradient(135deg, #8fd6c1 0%, #8fd6c1 38%, #ff5178 38%, #ff5178 66%, #0f380f 66%, #0f380f 100%); }
   .swatch-fieldunit { background: linear-gradient(135deg, #a6ab8a 0%, #a6ab8a 38%, #a8433a 38%, #a8433a 66%, #0d1a0d 66%, #0d1a0d 100%); }
+  .swatch-brutal { background: linear-gradient(135deg, #ffd60a 0%, #ffd60a 38%, #00c2cb 38%, #00c2cb 66%, #000 66%, #000 100%); }
   .skin-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .skin-name { font-weight: 700; font-size: 13px; letter-spacing: 0.03em; }
   .skin-desc { font-size: 11px; opacity: 0.7; }
@@ -1276,6 +1345,212 @@
     [data-skin="fieldunit"] .deco-tape { display: none; }
   }
 
+  /* ================= Neo-Brutal ================= */
+  [data-skin="brutal"] {
+    --stroke: 3px;
+    --hard: 5px;
+  }
+  [data-skin="brutal"] body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 700;
+  }
+  [data-skin="brutal"] .orchid {
+    border: 4px solid #000;
+    box-shadow: 10px 10px 0 #000;
+  }
+  [data-skin="brutal"] .brand .logo {
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  /* Headings sit on a solid rule rather than floating in the panel. */
+  /* The 3-4px strokes add real height, so trim the rhythm to keep the
+     whole instrument on one screen like the other skins. */
+  [data-skin="brutal"] .section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 7px 2px 4px;
+    color: #000;
+    font-weight: 800;
+  }
+  [data-skin="brutal"] .section-label::after {
+    content: "";
+    flex: 1;
+    height: 3px;
+    background: #000;
+  }
+  /* Blocks carry the stroke and a hard shadow; pressing one drops it into
+     that shadow and inverts it to black-on-accent. */
+  [data-skin="brutal"] .obtn {
+    border: var(--stroke) solid #000;
+    border-radius: var(--radius-md);
+    padding: 8px 0;
+    color: #000;
+    font-weight: 800;
+    text-shadow: none;
+    box-shadow: var(--hard) var(--hard) 0 #000;
+  }
+  [data-skin="brutal"] .obtn::after {
+    top: 5px; right: 5px;
+    width: 8px; height: 8px;
+    border-radius: 0;
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: none;
+  }
+  /* Eight buttons share this row, so its labels are the only ones wide
+     enough to run under the corner lamp — size them down to clear it. */
+  [data-skin="brutal"] #engineRow .obtn { font-size: 10.5px; letter-spacing: 0.06em; }
+  [data-skin="brutal"] .obtn:active,
+  [data-skin="brutal"] .obtn.pressed,
+  [data-skin="brutal"] .obtn.active,
+  [data-skin="brutal"] .obtn.gray:active,
+  [data-skin="brutal"] .obtn.gray.pressed,
+  [data-skin="brutal"] .obtn.gray.active {
+    transform: translate(var(--hard), var(--hard));
+    box-shadow: 0 0 0 #000;
+  }
+  [data-skin="brutal"] .obtn.pressed,
+  [data-skin="brutal"] .obtn.active,
+  [data-skin="brutal"] .obtn.gray.pressed,
+  [data-skin="brutal"] .obtn.gray.active {
+    color: var(--coral);
+  }
+  [data-skin="brutal"] .obtn.pressed::after,
+  [data-skin="brutal"] .obtn.active::after,
+  [data-skin="brutal"] .obtn.gray.pressed::after,
+  [data-skin="brutal"] .obtn.gray.active::after {
+    background: var(--led-lit);
+    border-color: #fff;
+    box-shadow: none;
+  }
+  /* Filled primaries per row; the engine buttons stay outline (white) so
+     the row still reads as a secondary choice. */
+  [data-skin="brutal"] #qualityRow { --coral: #00c2cb; --coral-top: #00c2cb; --coral-rgb: 0,194,203; }
+  [data-skin="brutal"] #extRow { --coral: #ffd700; --coral-top: #ffd700; --coral-rgb: 255,215,0; }
+  [data-skin="brutal"] #engineRow { --coral: #ff2e88; --coral-top: #ff2e88; --coral-rgb: 255,46,136; }
+
+  [data-skin="brutal"] .display,
+  [data-skin="brutal"] .history,
+  [data-skin="brutal"] .keybed,
+  [data-skin="brutal"] .strum {
+    border: 4px solid #000;
+    border-radius: var(--radius-md);
+    box-shadow: none;
+  }
+  [data-skin="brutal"] .display .chord-name,
+  [data-skin="brutal"] .history .hname,
+  [data-skin="brutal"] .history .hcell.playable:hover .hname,
+  [data-skin="brutal"] .history .hcell.lit .hname {
+    text-shadow: none;
+    font-weight: 800;
+  }
+  [data-skin="brutal"] .mkey.white,
+  [data-skin="brutal"] .mkey.black { border-radius: 0; box-shadow: none; }
+  [data-skin="brutal"] .mkey.white.active,
+  [data-skin="brutal"] .mkey.black.active { box-shadow: none; }
+
+  [data-skin="brutal"] .key.white,
+  [data-skin="brutal"] .key.white:first-child,
+  [data-skin="brutal"] .key.white:last-child {
+    border: var(--stroke) solid #000;
+    border-radius: 0 0 4px 4px;
+    box-shadow: none;
+  }
+  [data-skin="brutal"] .key.black {
+    border: var(--stroke) solid #000;
+    border-radius: 0 0 3px 3px;
+    box-shadow: none;
+  }
+  [data-skin="brutal"] .strum .seg {
+    border: var(--stroke) solid #000;
+    border-radius: 3px;
+    background: var(--coral);
+    box-shadow: none;
+    color: #000;
+    font-weight: 800;
+  }
+  [data-skin="brutal"] .strum .seg.lit { filter: none; background: var(--led-lit); }
+
+  /* Square, high-contrast controls. */
+  [data-skin="brutal"] .stepper button,
+  [data-skin="brutal"] .icon-btn,
+  [data-skin="brutal"] #playBtn,
+  [data-skin="brutal"] #midiOutBtn,
+  [data-skin="brutal"] #midiBtn,
+  [data-skin="brutal"] #midiPortSelect,
+  [data-skin="brutal"] #installBtn {
+    border: var(--stroke) solid #000;
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: #000;
+    font-weight: 800;
+    box-shadow: 3px 3px 0 #000;
+  }
+  [data-skin="brutal"] .stepper button:active,
+  [data-skin="brutal"] .icon-btn:active,
+  [data-skin="brutal"] #playBtn:active,
+  [data-skin="brutal"] #midiOutBtn:active,
+  [data-skin="brutal"] #midiBtn:active,
+  [data-skin="brutal"] #installBtn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 #000;
+  }
+  [data-skin="brutal"] #playBtn.on,
+  [data-skin="brutal"] #midiOutBtn.active {
+    background: #000;
+    color: var(--coral);
+  }
+  [data-skin="brutal"] .midi-status .dot { border-radius: 0; border: 2px solid #000; box-shadow: none; }
+  [data-skin="brutal"] .stepper .value { font-weight: 800; }
+
+  [data-skin="brutal"] .ctl input[type=range]::-webkit-slider-runnable-track {
+    height: 14px;
+    border: var(--stroke) solid #000;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+  }
+  [data-skin="brutal"] .ctl input[type=range]::-webkit-slider-thumb {
+    width: 18px; height: 18px;
+    border-radius: 0;
+    border: var(--stroke) solid #000;
+    background: #000;
+    box-shadow: none;
+    margin-top: -5px;
+  }
+  [data-skin="brutal"] .ctl input[type=range]::-moz-range-track {
+    height: 14px; border: var(--stroke) solid #000; border-radius: 0; background: #fff;
+  }
+  [data-skin="brutal"] .ctl input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 0; border: var(--stroke) solid #000; background: #000;
+  }
+
+  [data-skin="brutal"] .version { margin-top: 5px; }
+  [data-skin="brutal"] .version span {
+    background: #000;
+    color: #fff;
+    border: var(--stroke) solid #000;
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--coral);
+    text-shadow: none;
+    font-weight: 800;
+  }
+  [data-skin="brutal"] .help-panel {
+    border: 4px solid #000;
+    border-radius: var(--radius-lg);
+    box-shadow: 10px 10px 0 #000;
+  }
+  [data-skin="brutal"] .help-close,
+  [data-skin="brutal"] .skin-card {
+    border: var(--stroke) solid #000;
+    border-radius: var(--radius-sm);
+    background: #fff;
+  }
+  [data-skin="brutal"] .skin-card.active { background: var(--coral); }
+  [data-skin="brutal"] .skin-swatch { border: var(--stroke) solid #000; border-radius: 0; box-shadow: none; }
+
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
     body { padding: 10px 6px 14px; }
@@ -1449,7 +1724,7 @@
   </div>
 
   <div class="deco deco-tape" aria-hidden="true">Calibrated for<br>lo-fi vibes</div>
-  <div class="version"><span>Inspiration Machine v2026-07-30.2</span></div>
+  <div class="version"><span>Inspiration Machine v2026-07-30.3</span></div>
 </div>
 
 <div class="help-overlay" id="helpOverlay" hidden>
@@ -1499,6 +1774,13 @@
         <span class="skin-info">
           <span class="skin-name">Field Unit</span>
           <span class="skin-desc">Battered olive metal, walnut cheeks, phosphor glass.</span>
+        </span>
+      </button>
+      <button class="skin-card" data-skin="brutal">
+        <span class="skin-swatch swatch-brutal"></span>
+        <span class="skin-info">
+          <span class="skin-name">Neo-Brutal</span>
+          <span class="skin-desc">Thick black strokes, hard shadows, loud flat blocks.</span>
         </span>
       </button>
     </div>
