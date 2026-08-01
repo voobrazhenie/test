@@ -1777,7 +1777,7 @@
     box-shadow: none;
     padding: 8px 14px;
     display: grid;
-    grid-template-columns: minmax(0, auto) 1fr;
+    grid-template-columns: minmax(0, 44%) 1fr;
     grid-template-areas: "name keys" "notes keys";
     align-items: center;
     column-gap: 20px;
@@ -2058,8 +2058,8 @@
     -webkit-mask-position: center; mask-position: center;
   }
   [data-skin="chart"] #settingsBtn::before {
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3Cpath d='M12 2.6v3.1M12 18.3v3.1M2.6 12h3.1M18.3 12h3.1M5.3 5.3l2.2 2.2M16.5 16.5l2.2 2.2M18.7 5.3l-2.2 2.2M7.5 16.5l-2.2 2.2'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3Cpath d='M12 2.6v3.1M12 18.3v3.1M2.6 12h3.1M18.3 12h3.1M5.3 5.3l2.2 2.2M16.5 16.5l2.2 2.2M18.7 5.3l-2.2 2.2M7.5 16.5l-2.2 2.2'/%3E%3C/svg%3E");
-    -webkit-mask-size: 14px 14px; mask-size: 14px 14px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2'%3E%3Crect x='3.5' y='3.5' width='7.5' height='7.5' fill='%23000'/%3E%3Crect x='13' y='3.5' width='7.5' height='7.5'/%3E%3Crect x='3.5' y='13' width='7.5' height='7.5'/%3E%3Crect x='13' y='13' width='7.5' height='7.5'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2'%3E%3Crect x='3.5' y='3.5' width='7.5' height='7.5' fill='%23000'/%3E%3Crect x='13' y='3.5' width='7.5' height='7.5'/%3E%3Crect x='3.5' y='13' width='7.5' height='7.5'/%3E%3Crect x='13' y='13' width='7.5' height='7.5'/%3E%3C/svg%3E");
+    -webkit-mask-size: 13px 13px; mask-size: 13px 13px;
   }
   [data-skin="chart"] #playBtn::before {
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4.5l12 7.5-12 7.5z' fill='%23000'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4.5l12 7.5-12 7.5z' fill='%23000'/%3E%3C/svg%3E");
@@ -2110,6 +2110,20 @@
     [data-skin="chart"] .display { column-gap: 12px; }
     [data-skin="chart"] .mini-keys { height: 52px; }
   }
+
+  /* Registration: this skin zeroes the keybed padding and gaps, so the
+     white-key seams fall on exact sevenths. The shared BLACK_POS constants
+     are tuned for the padded layout and would print ~4% off here. */
+  [data-skin="chart"] #blackKeys .key.black:nth-child(1),
+  [data-skin="chart"] .mini-black-row .mkey.black:nth-child(1) { left: 14.2857% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(2),
+  [data-skin="chart"] .mini-black-row .mkey.black:nth-child(2) { left: 28.5714% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(3),
+  [data-skin="chart"] .mini-black-row .mkey.black:nth-child(3) { left: 57.1429% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(4),
+  [data-skin="chart"] .mini-black-row .mkey.black:nth-child(4) { left: 71.4286% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(5),
+  [data-skin="chart"] .mini-black-row .mkey.black:nth-child(5) { left: 85.7143% !important; }
 
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
