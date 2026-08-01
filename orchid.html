@@ -1644,11 +1644,18 @@
   [data-skin="chart"] {
     --rule-w: 2px;
     --rule-heavy: 3px;
-    /* Condensed workhorse stack. A self-hosted face would be better, but
-       the offline-PWA constraint rules out fetching one and the file has
-       no licensed font to embed — so this is a disclosed compromise. */
-    --face-display: "Helvetica Neue Condensed", "HelveticaNeue-CondensedBold",
-                    "Arial Narrow", "Liberation Sans Narrow", Helvetica, Arial, sans-serif;
+    --face-display: "IM Chart Condensed", "Arial Narrow", Helvetica, Arial, sans-serif;
+  }
+  /* The lettering is the world, so it ships with the file rather than
+     depending on what the viewer happens to have installed. DejaVu Sans
+     Condensed Bold, subset to the glyphs this UI uses (5KB), embedded so
+     the offline PWA and the artifact CSP both still hold. */
+  @font-face {
+    font-family: "IM Chart Condensed";
+    font-style: normal;
+    font-weight: 400 900;
+    font-display: swap;
+    src: url(data:font/woff2;base64,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) format("woff2");
   }
   [data-skin="chart"] body { font-family: Helvetica, Arial, sans-serif; }
 
@@ -1656,7 +1663,25 @@
   [data-skin="chart"] .orchid {
     background: var(--paper);
     border: var(--rule-heavy) solid var(--rule);
-    box-shadow: 0 12px 34px rgba(0,0,0,0.32);
+    border-radius: 2px;
+    box-shadow: none;
+  }
+  /* Registration crop marks pin the sheet. A two-plate press cannot print
+     a blurred penumbra, so the plate casts no shadow at all. */
+  [data-skin="chart"] .orchid::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--rule),var(--rule)) left    top/13px 1.5px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) left    top/1.5px 13px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) right   top/13px 1.5px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) right   top/1.5px 13px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) left  bottom/13px 1.5px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) left  bottom/1.5px 13px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) right bottom/13px 1.5px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) right bottom/1.5px 13px no-repeat;
   }
   [data-skin="chart"] .brand .logo {
     font-family: var(--face-display);
@@ -1743,12 +1768,19 @@
 
   /* Header cell: the chord printed large, with the keyboard diagram as the
      hero mark rather than a thumbnail. */
+  /* Name left, diagram right at hero width, filling the cell — the
+     contract's composition, not a stacked thumbnail with blank paper. */
   [data-skin="chart"] .display {
     background: var(--paper-bright);
     border: var(--rule-heavy) solid var(--rule);
     border-radius: 0;
     box-shadow: none;
-    padding: 7px 14px;
+    padding: 8px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, auto) 1fr;
+    grid-template-areas: "name keys" "notes keys";
+    align-items: center;
+    column-gap: 20px;
   }
   [data-skin="chart"] .display .chord-name {
     font-family: var(--face-display);
@@ -1757,6 +1789,8 @@
     letter-spacing: -0.01em;
     color: var(--rule);
     text-shadow: none;
+    grid-area: name;
+    align-self: end;
   }
   [data-skin="chart"] .display .chord-notes {
     font-family: var(--face-display);
@@ -1764,13 +1798,17 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     color: var(--sublabel);
+    grid-area: notes;
+    align-self: start;
   }
   /* The chord diagram is the hero mark of this world, so it gets figure
      scale and a printed frame rather than the default thumbnail strip. */
   [data-skin="chart"] .mini-keys {
-    height: 40px;
-    max-width: 244px;
-    margin-top: 6px;
+    grid-area: keys;
+    height: 64px;
+    max-width: none;
+    width: 100%;
+    margin: 0;
     border: 2px solid var(--rule);
   }
   [data-skin="chart"] .mini-white-row { gap: 0; }
@@ -1968,8 +2006,17 @@
 
   /* This world can carry a real focus mark, so it gets one. */
   [data-skin="chart"] :focus-visible {
-    outline: var(--rule-heavy) solid var(--coral);
+    outline: var(--rule-heavy) solid var(--rule);
     outline-offset: 2px;
+  }
+  /* A coral ring on a coral flood is no ring at all — knock it out to
+     paper on exactly the controls that latch. */
+  [data-skin="chart"] .obtn.active:focus-visible,
+  [data-skin="chart"] .obtn.pressed:focus-visible,
+  [data-skin="chart"] #playBtn.on:focus-visible,
+  [data-skin="chart"] #midiOutBtn.active:focus-visible {
+    outline-color: var(--paper-bright);
+    outline-offset: -6px;
   }
 
   [data-skin="chart"] .help-panel,
@@ -1977,7 +2024,7 @@
     background: var(--paper);
     border: var(--rule-heavy) solid var(--rule);
     border-radius: 0;
-    box-shadow: 0 12px 34px rgba(0,0,0,0.4);
+    box-shadow: none;
   }
   [data-skin="chart"] .help-close,
   [data-skin="chart"] .skin-card {
@@ -1992,6 +2039,76 @@
     font-family: var(--face-display);
     font-weight: 700;
     letter-spacing: 0.04em;
+  }
+
+  /* Fix 7: authored SVG marks at one stroke weight, replacing the inherited
+     unicode glyphs in this skin's first viewport. Masked, so they take the
+     ink colour and knock out to paper when their cell floods. */
+  [data-skin="chart"] #settingsBtn,
+  [data-skin="chart"] #playBtn,
+  [data-skin="chart"] .history .hinv button { font-size: 0; position: relative; }
+  [data-skin="chart"] #settingsBtn::before,
+  [data-skin="chart"] #playBtn::before,
+  [data-skin="chart"] .history .hinv button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--rule);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+  }
+  [data-skin="chart"] #settingsBtn::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3Cpath d='M12 2.6v3.1M12 18.3v3.1M2.6 12h3.1M18.3 12h3.1M5.3 5.3l2.2 2.2M16.5 16.5l2.2 2.2M18.7 5.3l-2.2 2.2M7.5 16.5l-2.2 2.2'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3Cpath d='M12 2.6v3.1M12 18.3v3.1M2.6 12h3.1M18.3 12h3.1M5.3 5.3l2.2 2.2M16.5 16.5l2.2 2.2M18.7 5.3l-2.2 2.2M7.5 16.5l-2.2 2.2'/%3E%3C/svg%3E");
+    -webkit-mask-size: 14px 14px; mask-size: 14px 14px;
+  }
+  [data-skin="chart"] #playBtn::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4.5l12 7.5-12 7.5z' fill='%23000'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4.5l12 7.5-12 7.5z' fill='%23000'/%3E%3C/svg%3E");
+    -webkit-mask-size: 11px 11px; mask-size: 11px 11px;
+  }
+  [data-skin="chart"] .history .hinv button:first-child::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 15.5l7-7 7 7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 15.5l7-7 7 7'/%3E%3C/svg%3E");
+    -webkit-mask-size: 12px 12px; mask-size: 12px 12px;
+  }
+  [data-skin="chart"] .history .hinv button:last-child::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8.5l7 7 7-7'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8.5l7 7 7-7'/%3E%3C/svg%3E");
+    -webkit-mask-size: 12px 12px; mask-size: 12px 12px;
+  }
+  [data-skin="chart"] #settingsBtn:active::before,
+  [data-skin="chart"] #playBtn:active::before,
+  [data-skin="chart"] #playBtn.on::before,
+  [data-skin="chart"] .history .hinv button:hover::before { background: var(--paper-bright); }
+  /* The export button keeps its word and drops the glyph for a drawn mark. */
+  [data-skin="chart"] #midiBtn { font-size: 0; }
+  [data-skin="chart"] #midiBtn::before {
+    content: "MIDI";
+    font-family: var(--face-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    vertical-align: middle;
+  }
+  [data-skin="chart"] #midiBtn::after {
+    content: "";
+    display: inline-block;
+    width: 11px; height: 11px;
+    margin-left: 6px;
+    vertical-align: middle;
+    background: var(--rule);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11M7.5 10l4.5 4.5L16.5 10M4 20.5h16'/%3E%3C/svg%3E") center/11px 11px no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11M7.5 10l4.5 4.5L16.5 10M4 20.5h16'/%3E%3C/svg%3E") center/11px 11px no-repeat;
+  }
+  [data-skin="chart"] #midiBtn:active::before { color: var(--paper-bright); }
+  [data-skin="chart"] #midiBtn:active::after { background: var(--paper-bright); }
+
+  /* Fixes 4 and 6: the printed sheet keeps square corners on a phone, and
+     the corner marks shrink so they stop touching the labels. */
+  @media (max-width: 640px) {
+    [data-skin="chart"] .orchid { border-radius: 2px; }
+    [data-skin="chart"] .obtn { padding: 8px 13px; font-size: 11.5px; }
+    [data-skin="chart"] #engineRow .obtn { font-size: 10px; padding: 8px 11px; }
+    [data-skin="chart"] .obtn::after { width: 6px; height: 6px; top: 4px; right: 4px; border-width: 1.5px; }
+    [data-skin="chart"] .display { column-gap: 12px; }
+    [data-skin="chart"] .mini-keys { height: 52px; }
   }
 
   /* Compact layout: chord types + keys must share one phone screen */

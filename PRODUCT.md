@@ -53,7 +53,7 @@ Confirmed capabilities:
   a settable BPM.
 - Live MIDI out with port selection and persistence; drag-out / download `.mid`
   export.
-- Five selectable skins, persisted to localStorage.
+- Six selectable skins, persisted to localStorage.
 
 Binding constraints (user-confirmed):
 - The whole instrument stays visible without scrolling at 1080p and 1440p.
