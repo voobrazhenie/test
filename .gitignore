@@ -1,0 +1,25 @@
+# Impeccable runtime state. Generated artifacts worth keeping (e.g.
+# .impeccable/critique/ snapshots) stay tracked; live-server pids, tokens,
+# caches and local scratch do not. Mirrors the upstream project's own
+# ignores from github.com/pbakaus/impeccable.
+.impeccable/live/server.json
+.impeccable/live/codex-worker.json
+.impeccable/live/codex-worker.log
+**/.impeccable/hook.cache.json
+**/.impeccable/hook.pending.json
+.impeccable/live/sessions/
+.impeccable/live/previews/
+.impeccable/live/annotations/
+.impeccable/live/artifacts/
+.impeccable/live/accept-receipts/
+.impeccable/live/locks/
+.impeccable/live/cache/
+.impeccable/live/benchmarks/
+.impeccable/live/manual-edit-apply-transaction.json
+.impeccable/live/manual-edit-events.jsonl
+.impeccable/live/manual-edit-evidence/
+.impeccable/live/pending-manual-edits.json
+.impeccable/live/deferred-svelte-component-accepts.json
+.impeccable/history/
+.impeccable/config.local.json
+.impeccable/provider-smoke/
