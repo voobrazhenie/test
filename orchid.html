@@ -2114,16 +2114,20 @@
   /* Registration: this skin zeroes the keybed padding and gaps, so the
      white-key seams fall on exact sevenths. The shared BLACK_POS constants
      are tuned for the padded layout and would print ~4% off here. */
-  [data-skin="chart"] #blackKeys .key.black:nth-child(1),
+  /* Two positioning models, so two sets of numbers. .mkey.black carries
+     translateX(-50%), so a seam fraction centres it. .key.black does not,
+     so it needs the seam minus half its 7.5% width — which is what the
+     shared constants always encoded. */
   [data-skin="chart"] .mini-black-row .mkey.black:nth-child(1) { left: 14.2857% !important; }
-  [data-skin="chart"] #blackKeys .key.black:nth-child(2),
   [data-skin="chart"] .mini-black-row .mkey.black:nth-child(2) { left: 28.5714% !important; }
-  [data-skin="chart"] #blackKeys .key.black:nth-child(3),
   [data-skin="chart"] .mini-black-row .mkey.black:nth-child(3) { left: 57.1429% !important; }
-  [data-skin="chart"] #blackKeys .key.black:nth-child(4),
   [data-skin="chart"] .mini-black-row .mkey.black:nth-child(4) { left: 71.4286% !important; }
-  [data-skin="chart"] #blackKeys .key.black:nth-child(5),
   [data-skin="chart"] .mini-black-row .mkey.black:nth-child(5) { left: 85.7143% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(1) { left: 10.5357% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(2) { left: 24.8214% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(3) { left: 53.3929% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(4) { left: 67.6786% !important; }
+  [data-skin="chart"] #blackKeys .key.black:nth-child(5) { left: 81.9643% !important; }
 
   /* Compact layout: chord types + keys must share one phone screen */
   @media (max-width: 640px) {
